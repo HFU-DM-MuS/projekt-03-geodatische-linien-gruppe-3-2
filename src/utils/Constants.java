@@ -9,4 +9,8 @@ public class Constants {
 
     public static double TIMESCALE = 1.0;
 
+    // projection settings
+    public static double PROJECTION_ROT = 135.0;
+    public static double PROJECTION_S1 = 1 / Math.sqrt(2);
+
 }

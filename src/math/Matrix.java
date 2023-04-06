@@ -47,6 +47,22 @@ public class Matrix {
         return result;
     }
 
+    public Vector multiply(Vector v) throws Exception {
+        Matrix vm = new Matrix(new double[][]{
+                {v.x()},
+                {v.y()},
+                {v.z()},
+                {1.0}
+        });
+
+        Matrix result = this.multiply(vm);
+        return new Vector(
+                result.data[0][0],
+                result.data[1][0],
+                0
+        );
+    }
+
     @Override
     public String toString() {
         String result = "[\n";
