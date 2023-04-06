@@ -3,6 +3,7 @@ package app;
 import javax.swing.*;
 import java.awt.*;
 
+import math.Coordinate;
 import math.Matrix;
 import math.Vector;
 import utils.ApplicationTime;
@@ -18,8 +19,8 @@ public class GraphicsContent extends JPanel {
     private double deltaTime = 0.0;
     private double lastFrameTime = 0.0;
     private final Matrix projectionMatrix = new Matrix(new double[][]{
-            {-Constants.PROJECTION_S1 * Math.sin(Math.toRadians(Constants.PROJECTION_ROT)), 1.0, 0.0, Constants.WINDOW_WIDTH / 2},
-            {-Constants.PROJECTION_S1 * Math.cos(Math.toRadians(Constants.PROJECTION_ROT)), 0.0, -1.0, Constants.WINDOW_HEIGHT / 2}
+            {-Constants.PROJECTION_S1 * Math.sin(Math.toRadians(Constants.PROJECTION_ROT)), 1.0, 0.0, Constants.WINDOW_WIDTH / 2.},
+            {-Constants.PROJECTION_S1 * Math.cos(Math.toRadians(Constants.PROJECTION_ROT)), 0.0, -1.0, Constants.WINDOW_HEIGHT / 2.}
     });
 
     public GraphicsContent(ApplicationTime thread) {
@@ -34,6 +35,7 @@ public class GraphicsContent extends JPanel {
         lastFrameTime = t.getTimeInSeconds();
 
         this.paintCoordinateSystem(g);
+        this.paintGlobeWireframe(g);
     }
 
     private void paintCoordinateSystem(Graphics g) {
@@ -48,6 +50,9 @@ public class GraphicsContent extends JPanel {
         g.setFont(new Font("Arial", Font.PLAIN, 12));
         g.drawString("x-axis", w - 50, h / 2 + 10);
         g.drawString("y-axis", w / 2 + 10, 10);
+
+        // draw fps
+        g.drawString(String.format("%.1f FPS", 1.0 / deltaTime), 10, 10);
 
 
         Vector ux = new Vector(100.0, 0.0, 0.0);
@@ -69,6 +74,43 @@ public class GraphicsContent extends JPanel {
 
             g.setColor(Color.BLUE);
             g.drawLine(cx, cy, (int) sz.x(), (int) sz.y());
+
+
+        } catch (Exception e) {
+            System.err.println(e);
+        }
+    }
+
+    private void paintGlobeWireframe(Graphics g) {
+        try {
+            int step = 1;
+            double[] lats = {-30.0, -60.0, 0.0, 30.0, 60.0};
+            double[] longs = {0.0, 45.0, 90.0, 135.0, 180.0, 225.0, 270.0, 315.0};
+
+            // horizontal lines
+            for (double latitude : lats) {
+                for (int longitude = 0; longitude < 360; longitude += step) {
+                    Coordinate c = new Coordinate(longitude, latitude);
+                    Vector cv = c.toCartesian();
+                    Vector sv = projectionMatrix.multiply(cv);
+
+                    g.setColor(Color.BLACK);
+                    g.fillRect((int) sv.x(), (int) sv.y(), 1, 1);
+                }
+            }
+
+            // vertical lines
+            for (double longitude : longs) {
+                for (int latitude = -90; latitude < 90; latitude += step) {
+                    Coordinate c = new Coordinate(longitude, latitude);
+                    Vector cv = c.toCartesian();
+                    Vector sv = projectionMatrix.multiply(cv);
+
+                    g.setColor(Color.BLACK);
+                    g.fillRect((int) sv.x(), (int) sv.y(), 1, 1);
+                }
+            }
+
         } catch (Exception e) {
             System.err.println(e);
         }
