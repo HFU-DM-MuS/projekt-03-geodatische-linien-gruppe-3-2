@@ -1,19 +1,18 @@
 package app;
 
 
+import math.Vector;
+
 public class Main {
 
-	public static void main(String[] args) {
-		Animation animation = null;
-//      uncomment the option that you wish to execute.
-		//animation = new _1_BasicAnimation(); // modify class Animation.java to demonstrate a less jumpy animation
-		//animation = new _2_SmootherAnimationSeveralWindows();
-		//animation = new _3_MultipleCirclesAnimation();
-		//animation = new _4_TemporalFunctionDemo();
-		//animation = new _5_ClockAnimation();
-		animation = new _6_YourOwnAnimation();
-		animation.start();
-	}
+    public static void main(String[] args) {
+        //Window w = new Window();
+
+        Vector v = new Vector(1, 0, 0);
+        Vector u = new Vector(0, 1, 0);
+
+        System.out.println(v.dot(u));
+    }
 
 
 }
