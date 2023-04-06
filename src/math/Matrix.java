@@ -65,16 +65,16 @@ public class Matrix {
 
     @Override
     public String toString() {
-        String result = "[\n";
+        StringBuilder sb = new StringBuilder("[\n");
 
         for (int row = 0; row < this.m; row++) {
             for (int col = 0; col < this.n; col++) {
-                result += this.data[row][col] + " ";
+                sb.append(this.data[row][col]).append(" ");
             }
-            result += "\n";
+            sb.append("\n");
         }
-        result += "]";
+        sb.append("]");
 
-        return result;
+        return sb.toString();
     }
 }
