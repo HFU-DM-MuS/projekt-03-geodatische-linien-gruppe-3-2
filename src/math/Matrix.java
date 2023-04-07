@@ -51,7 +51,7 @@ public class Matrix {
         return result;
     }
 
-    public Vector multiply(Vector v) throws Exception {
+    public Vector doScreenProjection(Vector v) throws Exception {
         Matrix vm = new Matrix(new double[][]{
                 {v.x()},
                 {v.y()},
@@ -64,6 +64,24 @@ public class Matrix {
                 result.data[0][0],
                 result.data[1][0],
                 0
+        );
+    }
+
+    public Vector multiply(Vector v) throws Exception {
+        if (this.cols != 3) {
+            throw new Exception("Only matrices with 3 columns can be multiplied with a (3D-)Vector");
+        }
+
+        Matrix m = this.multiply(new Matrix(new double[][]{
+                {v.x()},
+                {v.y()},
+                {v.z()}
+        }));
+
+        return new Vector(
+                m.data[0][0],
+                m.data[1][0],
+                0.0
         );
     }
 

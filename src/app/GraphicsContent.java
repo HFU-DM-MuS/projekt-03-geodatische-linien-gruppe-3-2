@@ -23,6 +23,25 @@ public class GraphicsContent extends JPanel {
             {-Constants.PROJECTION_S1 * Math.cos(Math.toRadians(Constants.PROJECTION_ROT)), 0.0, -1.0, Constants.WINDOW_HEIGHT / 2.}
     });
 
+    private final double phi_p = Math.toDegrees(
+            Math.atan(
+                    Constants.PROJECTION_S1 *
+                            Math.sin(Math.toRadians(Constants.PROJECTION_ROT))
+            )
+    );
+    private final double theta_p = Math.toDegrees(
+            Math.atan(
+                    -Constants.PROJECTION_S1 *
+                            Math.cos(Math.toRadians(Constants.PROJECTION_ROT)) *
+                            Math.cos(
+                                    Math.atan(
+                                            Constants.PROJECTION_S1 *
+                                                    Math.sin(Math.toRadians(Constants.PROJECTION_ROT))
+                                    )
+                            )
+            )
+    );
+
     public GraphicsContent(ApplicationTime thread) {
         this.t = thread;
     }
@@ -36,6 +55,7 @@ public class GraphicsContent extends JPanel {
 
         this.paintCoordinateSystem(g);
         this.paintGlobeWireframe(g);
+        this.paintCircumcircle(g);
     }
 
     private void paintCoordinateSystem(Graphics g) {
@@ -60,9 +80,9 @@ public class GraphicsContent extends JPanel {
         Vector uz = new Vector(0.0, 0.0, 100.0);
 
         try {
-            Vector sx = projectionMatrix.multiply(ux);
-            Vector sy = projectionMatrix.multiply(uy);
-            Vector sz = projectionMatrix.multiply(uz);
+            Vector sx = projectionMatrix.doScreenProjection(ux);
+            Vector sy = projectionMatrix.doScreenProjection(uy);
+            Vector sz = projectionMatrix.doScreenProjection(uz);
 
             g2d.setStroke(new BasicStroke(5.0f));
 
@@ -92,10 +112,17 @@ public class GraphicsContent extends JPanel {
                 for (int longitude = 0; longitude < 360; longitude += step) {
                     Coordinate c = new Coordinate(longitude, latitude);
                     Vector cv = c.toCartesian();
-                    Vector sv = projectionMatrix.multiply(cv);
+                    Vector sv = projectionMatrix.doScreenProjection(cv);
 
-                    g.setColor(Color.BLACK);
-                    g.fillRect((int) sv.x(), (int) sv.y(), 1, 1);
+                    int dotSize = 1;
+                    if (cv.x() >= 0.0) {
+                        g.setColor(Color.BLACK);
+                        dotSize = 2;
+                    } else {
+                        g.setColor(Color.LIGHT_GRAY);
+                    }
+
+                    g.fillRect((int) sv.x(), (int) sv.y(), dotSize, dotSize);
                 }
             }
 
@@ -104,16 +131,53 @@ public class GraphicsContent extends JPanel {
                 for (int latitude = -90; latitude < 90; latitude += step) {
                     Coordinate c = new Coordinate(longitude, latitude);
                     Vector cv = c.toCartesian();
-                    Vector sv = projectionMatrix.multiply(cv);
+                    Vector sv = projectionMatrix.doScreenProjection(cv);
+
+                    int dotSize = 1;
+                    if (cv.x() >= 0.0) {
+                        g.setColor(Color.BLACK);
+                        dotSize = 2;
+                    } else {
+                        g.setColor(Color.LIGHT_GRAY);
+                    }
 
                     g.setColor(Color.BLACK);
-                    g.fillRect((int) sv.x(), (int) sv.y(), 1, 1);
+                    g.fillRect((int) sv.x(), (int) sv.y(), dotSize, dotSize);
                 }
             }
 
         } catch (Exception e) {
             System.err.println(e);
         }
+    }
+
+    public void paintCircumcircle(Graphics g) {
+        Graphics2D g2d = (Graphics2D) g;
+        try {
+
+            int step = 5;
+            Vector cv_prev = new Vector(0.0, Math.cos(Math.toRadians(0)), Math.sin(Math.toRadians(0)));
+            cv_prev.rotateWorldY(-theta_p).rotateWorldZ(phi_p).multiply(Constants.GLOBE_SCALE);
+
+            for (int t = step; t <= 360; t += step) {
+                Vector cv = new Vector(0.0, Math.cos(Math.toRadians(t)), Math.sin(Math.toRadians(t)));
+
+                cv.rotateWorldY(-theta_p).rotateWorldZ(phi_p).multiply(Constants.GLOBE_SCALE);
+
+                Vector sv = projectionMatrix.doScreenProjection(cv);
+                Vector sv_prev = projectionMatrix.doScreenProjection(cv_prev);
+
+                g.setColor(Color.RED);
+                g2d.setStroke(new BasicStroke(2.0f));
+                g.drawLine((int) sv_prev.x(), (int) sv_prev.y(), (int) sv.x(), (int) sv.y());
+
+                cv_prev = cv;
+            }
+        } catch (Exception e) {
+            System.err.println(e);
+        }
+
+
     }
 
     @Override
