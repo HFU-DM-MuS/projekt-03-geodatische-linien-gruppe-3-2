@@ -9,12 +9,18 @@ public class Vector {
         this.z = z;
     }
 
-    public Vector(double _x, double _y) {
-        this(_x, _y, 0.0);
+    public Vector(double x, double y) {
+        this(x, y, 0.0);
     }
 
     public Vector() {
         this(.0, .0, .0);
+    }
+
+    public Vector(Vector other) {
+        this.x = other.x;
+        this.y = other.y;
+        this.z = other.z;
     }
 
     public double x() {
@@ -72,11 +78,76 @@ public class Vector {
     }
 
     public Vector cross(Vector other) {
-        return new Vector(this.y * other.z - this.z * other.y, this.z * other.x - this.x * other.z, this.x * other.y - this.y * other.x);
+        return new Vector(
+                this.y * other.z - this.z * other.y,
+                this.z * other.x - this.x * other.z,
+                this.x * other.y - this.y * other.x
+        );
+    }
+
+    public Vector rotateWorldX(double angle) {
+
+        angle = Math.toRadians(angle);
+
+        Matrix rotMat = new Matrix(new double[][]{
+                {1.0, 0.0, 0.0},
+                {0.0, Math.cos(angle), -Math.sin(angle)},
+                {0.0, Math.sin(angle), Math.cos(angle)}
+        });
+
+        this.rotateWithMatrix(rotMat);
+
+        return this;
+    }
+
+    public Vector rotateWorldY(double angle) {
+
+        angle = Math.toRadians(angle);
+
+        Matrix rotMat = new Matrix(new double[][]{
+                {Math.cos(angle), 0.0, Math.sin(angle)},
+                {0.0, 1.0, 0.0},
+                {-Math.sin(angle), 0.0, Math.cos(angle)}
+        });
+
+        this.rotateWithMatrix(rotMat);
+
+        return this;
+    }
+
+    public Vector rotateWorldZ(double angle) {
+
+        angle = Math.toRadians(angle);
+
+        Matrix rotMat = new Matrix(new double[][]{
+                {Math.cos(angle), -Math.sin(angle), 0.0},
+                {Math.sin(angle), Math.cos(angle), 0.0},
+                {0.0, 0.0, 1.0}
+        });
+
+        this.rotateWithMatrix(rotMat);
+
+        return this;
     }
 
     @Override
     public String toString() {
         return String.format("(%.2f, %.2f, %.2f)", this.x, this.y, this.z);
+    }
+
+    private void rotateWithMatrix(Matrix m) {
+        try {
+            Matrix rotated = m.multiply(new Matrix(new double[][]{
+                    {this.x},
+                    {this.y},
+                    {this.z}
+            }));
+
+            this.x = rotated.get(0, 0);
+            this.y = rotated.get(0, 1);
+            this.z = rotated.get(0, 2);
+        } catch (Exception e) {
+            System.err.println(e);
+        }
     }
 }
