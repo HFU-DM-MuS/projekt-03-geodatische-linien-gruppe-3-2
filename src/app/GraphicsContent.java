@@ -97,13 +97,13 @@ public class GraphicsContent extends JPanel {
 
 
         } catch (Exception e) {
-            System.err.println(e);
+            e.printStackTrace();
         }
     }
 
     private void paintGlobeWireframe(Graphics g) {
         try {
-            int step = 1;
+            int step = 2;
             double[] lats = {-30.0, -60.0, 0.0, 30.0, 60.0};
             double[] longs = {0.0, 45.0, 90.0, 135.0, 180.0, 225.0, 270.0, 315.0};
 
@@ -115,7 +115,8 @@ public class GraphicsContent extends JPanel {
                     Vector sv = projectionMatrix.doScreenProjection(cv);
 
                     int dotSize = 1;
-                    if (cv.x() >= 0.0) {
+
+                    if(isVisible(cv)) {
                         g.setColor(Color.BLACK);
                         dotSize = 2;
                     } else {
@@ -134,7 +135,7 @@ public class GraphicsContent extends JPanel {
                     Vector sv = projectionMatrix.doScreenProjection(cv);
 
                     int dotSize = 1;
-                    if (cv.x() >= 0.0) {
+                    if(isVisible(cv)) {
                         g.setColor(Color.BLACK);
                         dotSize = 2;
                     } else {
@@ -147,7 +148,7 @@ public class GraphicsContent extends JPanel {
             }
 
         } catch (Exception e) {
-            System.err.println(e);
+            e.printStackTrace();
         }
     }
 
@@ -155,7 +156,7 @@ public class GraphicsContent extends JPanel {
         Graphics2D g2d = (Graphics2D) g;
         try {
 
-            int step = 5;
+            int step = 2;
             Vector cv_prev = new Vector(0.0, Math.cos(Math.toRadians(0)), Math.sin(Math.toRadians(0)));
             cv_prev.rotateWorldY(-theta_p).rotateWorldZ(phi_p).multiply(Constants.GLOBE_SCALE);
 
@@ -174,7 +175,7 @@ public class GraphicsContent extends JPanel {
                 cv_prev = cv;
             }
         } catch (Exception e) {
-            System.err.println(e);
+            e.printStackTrace();
         }
 
 
@@ -183,5 +184,13 @@ public class GraphicsContent extends JPanel {
     @Override
     public Dimension getPreferredSize() {
         return new Dimension(Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT);
+    }
+
+    private boolean isVisible(Vector point) {
+        return (
+                Math.cos(Math.toRadians(phi_p)) * Math.cos(Math.toRadians(theta_p)) * point.x() +
+                        Math.sin(Math.toRadians(phi_p)) * Math.cos(Math.toRadians(theta_p)) * point.y() +
+                        Math.sin(Math.toRadians(theta_p)) * point.z()
+        ) >= 0.0;
     }
 }

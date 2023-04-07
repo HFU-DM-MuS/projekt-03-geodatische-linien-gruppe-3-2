@@ -147,7 +147,7 @@ public class Vector {
             this.y = rotated.get(0, 1);
             this.z = rotated.get(0, 2);
         } catch (Exception e) {
-            System.err.println(e);
+            e.printStackTrace();
         }
     }
 }
