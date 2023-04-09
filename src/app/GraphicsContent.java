@@ -23,6 +23,9 @@ public class GraphicsContent extends JPanel {
             {-Constants.PROJECTION_S1 * Math.cos(Math.toRadians(Constants.PROJECTION_ROT)), 0.0, -1.0, Constants.WINDOW_HEIGHT / 2.}
     });
 
+    private Graphics g;
+    private Graphics2D g2d;
+
     private final double phi_p = Math.toDegrees(
             Math.atan(
                     Constants.PROJECTION_S1 *
@@ -50,16 +53,20 @@ public class GraphicsContent extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
+        this.g = g;
+        this.g2d = (Graphics2D) g;
+
         deltaTime = t.getTimeInSeconds() - lastFrameTime;
         lastFrameTime = t.getTimeInSeconds();
 
-        this.paintCoordinateSystem(g);
-        this.paintGlobeWireframe(g);
-        this.paintCircumcircle(g);
+        this.paintCoordinateSystem();
+        this.paintGlobeWireframe();
+        this.paintCircumcircle();
+
+        this.drawGeoPosition(new Coordinate(0.0, 51.477928));
     }
 
-    private void paintCoordinateSystem(Graphics g) {
-        Graphics2D g2d = (Graphics2D) g;
+    private void paintCoordinateSystem() {
 
         // coordinate system
         g.setColor(Color.BLACK);
@@ -74,7 +81,7 @@ public class GraphicsContent extends JPanel {
         // draw fps
         g.drawString(String.format("%.1f FPS", 1.0 / deltaTime), 10, 10);
 
-
+        /*
         Vector ux = new Vector(100.0, 0.0, 0.0);
         Vector uy = new Vector(0.0, 100.0, 0.0);
         Vector uz = new Vector(0.0, 0.0, 100.0);
@@ -99,9 +106,10 @@ public class GraphicsContent extends JPanel {
         } catch (Exception e) {
             e.printStackTrace();
         }
+         */
     }
 
-    private void paintGlobeWireframe(Graphics g) {
+    private void paintGlobeWireframe() {
         try {
             int step = 2;
             double[] lats = {-30.0, -60.0, 0.0, 30.0, 60.0};
@@ -116,7 +124,7 @@ public class GraphicsContent extends JPanel {
 
                     int dotSize = 1;
 
-                    if(isVisible(cv)) {
+                    if (isVisible(cv)) {
                         g.setColor(Color.BLACK);
                         dotSize = 2;
                     } else {
@@ -135,14 +143,18 @@ public class GraphicsContent extends JPanel {
                     Vector sv = projectionMatrix.doScreenProjection(cv);
 
                     int dotSize = 1;
-                    if(isVisible(cv)) {
+                    if (isVisible(cv)) {
                         g.setColor(Color.BLACK);
                         dotSize = 2;
                     } else {
                         g.setColor(Color.LIGHT_GRAY);
                     }
 
-                    g.setColor(Color.BLACK);
+                    if (longitude == 0.0) {
+                        // greenwich
+                        g.setColor(Color.GREEN);
+                    }
+
                     g.fillRect((int) sv.x(), (int) sv.y(), dotSize, dotSize);
                 }
             }
@@ -152,8 +164,7 @@ public class GraphicsContent extends JPanel {
         }
     }
 
-    public void paintCircumcircle(Graphics g) {
-        Graphics2D g2d = (Graphics2D) g;
+    public void paintCircumcircle() {
         try {
 
             int step = 2;
@@ -177,8 +188,6 @@ public class GraphicsContent extends JPanel {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-
     }
 
     @Override
@@ -192,5 +201,24 @@ public class GraphicsContent extends JPanel {
                         Math.sin(Math.toRadians(phi_p)) * Math.cos(Math.toRadians(theta_p)) * point.y() +
                         Math.sin(Math.toRadians(theta_p)) * point.z()
         ) >= 0.0;
+    }
+
+    private void drawGeoPosition(Coordinate coord) {
+
+        Vector cv = coord.toCartesian();
+
+        try {
+            Vector sv = projectionMatrix.doScreenProjection(cv);
+
+            int dotSize = 6;
+
+            if (isVisible(cv)) {
+                g.fillOval((int)sv.x() - dotSize / 2, (int)sv.y() - dotSize / 2, dotSize, dotSize);
+            } else {
+                g.drawOval((int)sv.x() - dotSize / 2, (int)sv.y() - dotSize / 2, dotSize, dotSize);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
