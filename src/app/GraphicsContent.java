@@ -18,32 +18,13 @@ public class GraphicsContent extends JPanel {
     private final int cy = h / 2;
     private double deltaTime = 0.0;
     private double lastFrameTime = 0.0;
-    private final Matrix projectionMatrix = new Matrix(new double[][]{
-            {-Constants.PROJECTION_S1 * Math.sin(Math.toRadians(Constants.PROJECTION_ROT)), 1.0, 0.0, Constants.WINDOW_WIDTH / 2.},
-            {-Constants.PROJECTION_S1 * Math.cos(Math.toRadians(Constants.PROJECTION_ROT)), 0.0, -1.0, Constants.WINDOW_HEIGHT / 2.}
-    });
+    private Matrix projectionMatrix;
 
     private Graphics g;
     private Graphics2D g2d;
 
-    private final double phi_p = Math.toDegrees(
-            Math.atan(
-                    Constants.PROJECTION_S1 *
-                            Math.sin(Math.toRadians(Constants.PROJECTION_ROT))
-            )
-    );
-    private final double theta_p = Math.toDegrees(
-            Math.atan(
-                    -Constants.PROJECTION_S1 *
-                            Math.cos(Math.toRadians(Constants.PROJECTION_ROT)) *
-                            Math.cos(
-                                    Math.atan(
-                                            Constants.PROJECTION_S1 *
-                                                    Math.sin(Math.toRadians(Constants.PROJECTION_ROT))
-                                    )
-                            )
-            )
-    );
+    private double phi_p;
+    private double theta_p;
 
     public GraphicsContent(ApplicationTime thread) {
         this.t = thread;
@@ -58,6 +39,8 @@ public class GraphicsContent extends JPanel {
 
         deltaTime = t.getTimeInSeconds() - lastFrameTime;
         lastFrameTime = t.getTimeInSeconds();
+
+        this.recalculateValues();
 
         this.paintCoordinateSystem();
         this.paintGlobeWireframe();
@@ -120,6 +103,10 @@ public class GraphicsContent extends JPanel {
                 for (int longitude = 0; longitude < 360; longitude += step) {
                     Coordinate c = new Coordinate(longitude, latitude);
                     Vector cv = c.toCartesian();
+
+                    // no need to rotate horizontal lines
+                    cv.rotateWorldZ(Constants.GLOBE_ROTATION);
+
                     Vector sv = projectionMatrix.doScreenProjection(cv);
 
                     int dotSize = 1;
@@ -140,6 +127,10 @@ public class GraphicsContent extends JPanel {
                 for (int latitude = -90; latitude < 90; latitude += step) {
                     Coordinate c = new Coordinate(longitude, latitude);
                     Vector cv = c.toCartesian();
+
+                    // apply rotation
+                    cv.rotateWorldZ(Constants.GLOBE_ROTATION);
+
                     Vector sv = projectionMatrix.doScreenProjection(cv);
 
                     int dotSize = 1;
@@ -171,6 +162,10 @@ public class GraphicsContent extends JPanel {
             Vector cv_prev = new Vector(0.0, Math.cos(Math.toRadians(0)), Math.sin(Math.toRadians(0)));
             cv_prev.rotateWorldY(-theta_p).rotateWorldZ(phi_p).multiply(Constants.GLOBE_SCALE);
 
+            g.setColor(Color.RED);
+            g2d.setStroke(new BasicStroke(2.0f));
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
             for (int t = step; t <= 360; t += step) {
                 Vector cv = new Vector(0.0, Math.cos(Math.toRadians(t)), Math.sin(Math.toRadians(t)));
 
@@ -179,8 +174,6 @@ public class GraphicsContent extends JPanel {
                 Vector sv = projectionMatrix.doScreenProjection(cv);
                 Vector sv_prev = projectionMatrix.doScreenProjection(cv_prev);
 
-                g.setColor(Color.RED);
-                g2d.setStroke(new BasicStroke(2.0f));
                 g.drawLine((int) sv_prev.x(), (int) sv_prev.y(), (int) sv.x(), (int) sv.y());
 
                 cv_prev = cv;
@@ -207,6 +200,9 @@ public class GraphicsContent extends JPanel {
 
         Vector cv = coord.toCartesian();
 
+        // apply rotation
+        cv.rotateWorldZ(Constants.GLOBE_ROTATION);
+
         try {
             Vector sv = projectionMatrix.doScreenProjection(cv);
 
@@ -220,5 +216,33 @@ public class GraphicsContent extends JPanel {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void recalculateValues() {
+
+        projectionMatrix = new Matrix(new double[][]{
+                {-Constants.PROJECTION_S1 * Math.sin(Math.toRadians(Constants.PROJECTION_ALPHA)), 1.0, 0.0, Constants.WINDOW_WIDTH / 2.},
+                {-Constants.PROJECTION_S1 * Math.cos(Math.toRadians(Constants.PROJECTION_ALPHA)), 0.0, -1.0, Constants.WINDOW_HEIGHT / 2.}
+        });
+
+        phi_p = Math.toDegrees(
+                Math.atan(
+                        Constants.PROJECTION_S1 *
+                                Math.sin(Math.toRadians(Constants.PROJECTION_ALPHA))
+                )
+        );
+
+        theta_p = Math.toDegrees(
+                Math.atan(
+                        -Constants.PROJECTION_S1 *
+                                Math.cos(Math.toRadians(Constants.PROJECTION_ALPHA)) *
+                                Math.cos(
+                                        Math.atan(
+                                                Constants.PROJECTION_S1 *
+                                                        Math.sin(Math.toRadians(Constants.PROJECTION_ALPHA))
+                                        )
+                                )
+                )
+        );
     }
 }
