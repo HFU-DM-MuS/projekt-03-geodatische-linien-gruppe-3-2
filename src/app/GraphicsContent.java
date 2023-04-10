@@ -43,7 +43,10 @@ public class GraphicsContent extends JPanel {
         this.recalculateValues();
 
         this.paintCoordinateSystem();
-        this.paintGlobeWireframe();
+        if(Constants.GLOBE_SHOW_WIREFRAME){
+            this.paintGlobeWireframe();
+        }
+
         this.paintCircumcircle();
 
         this.drawGeoPosition(new Coordinate(0.0, 51.477928));

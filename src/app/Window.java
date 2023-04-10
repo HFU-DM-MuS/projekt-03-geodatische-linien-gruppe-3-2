@@ -10,11 +10,11 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Timer;
+import java.util.regex.*;
 
 public class Window {
 
-    private final int nameLabelWidth = 50;
-    private final int valueLabelWidth = 30;
+
 
     public Window() {
         startAnimation();
@@ -41,13 +41,20 @@ public class Window {
 
 
     private JFrame createGUIFrame(ApplicationTime thread){
+
+        final int nameLabelWidth = 100;
+        final int valueLabelWidth = 30;
+        final int labelHeight = 15;
+        final int textFieldWidth = 100;
+        final int textFieldHeight = 30;
+
         JFrame frame = new JFrame("Controls");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setResizable(false);
+        frame.setResizable(true);
 
         JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(3, 1));
-        panel.setPreferredSize(new Dimension(300, 100));
+        panel.setLayout(new GridLayout(7, 1));
+        panel.setPreferredSize(new Dimension(400, 300));
 
 
 
@@ -57,17 +64,17 @@ public class Window {
         panelRow1.setBorder(new EmptyBorder(10, 10, 10, 10));
 
         JLabel projectionAlphaLabel = new JLabel("Alpha");
-        projectionAlphaLabel.setPreferredSize(new Dimension(nameLabelWidth, 10));
+        projectionAlphaLabel.setPreferredSize(new Dimension(nameLabelWidth, labelHeight));
         JLabel projectionAlphaValue = new JLabel(String.format("%d°", (int)Constants.PROJECTION_ALPHA));
-        projectionAlphaValue.setPreferredSize(new Dimension(valueLabelWidth, 10));
-        JScrollBar projectionAlphaBar = new JScrollBar(Adjustable.HORIZONTAL, (int)Constants.PROJECTION_ALPHA, 5, 0, 365);
-        projectionAlphaBar.addAdjustmentListener(e -> {
-            Constants.PROJECTION_ALPHA = (double)projectionAlphaBar.getValue();
+        projectionAlphaValue.setPreferredSize(new Dimension(valueLabelWidth, labelHeight));
+        JSlider projectionAlphaSlider = new JSlider(0, 360, (int)Constants.PROJECTION_ALPHA);
+        projectionAlphaSlider.addChangeListener(e -> {
+            Constants.PROJECTION_ALPHA = (double)projectionAlphaSlider.getValue();
             projectionAlphaValue.setText(String.format("%d", (int)Constants.PROJECTION_ALPHA));
         });
 
         panelRow1.add(projectionAlphaLabel, BorderLayout.LINE_START);
-        panelRow1.add(projectionAlphaBar, BorderLayout.CENTER);
+        panelRow1.add(projectionAlphaSlider, BorderLayout.CENTER);
         panelRow1.add(projectionAlphaValue, BorderLayout.LINE_END);
 
 
@@ -78,17 +85,17 @@ public class Window {
         panelRow2.setBorder(new EmptyBorder(10, 10, 10, 10));
 
         JLabel projectionS1Label = new JLabel("s1");
-        projectionS1Label.setPreferredSize(new Dimension(nameLabelWidth, 10));
+        projectionS1Label.setPreferredSize(new Dimension(nameLabelWidth, labelHeight));
         JLabel projectionS1Value = new JLabel(String.format("%.2f", Constants.PROJECTION_S1));
-        projectionS1Value.setPreferredSize(new Dimension(valueLabelWidth, 10));
-        JScrollBar projectionS1Bar = new JScrollBar(Adjustable.HORIZONTAL, (int)(Constants.PROJECTION_S1 * 100), 5, 0, 105);
-        projectionS1Bar.addAdjustmentListener(e -> {
-            Constants.PROJECTION_S1 = (double)projectionS1Bar.getValue() / 100.0;
+        projectionS1Value.setPreferredSize(new Dimension(valueLabelWidth, labelHeight));
+        JSlider projectionS1Slider = new JSlider(0, 100, (int)(Constants.PROJECTION_S1 * 100));
+        projectionS1Slider.addChangeListener(e -> {
+            Constants.PROJECTION_S1 = (double)projectionS1Slider.getValue() / 100.0;
             projectionS1Value.setText(String.format("%.2f", Constants.PROJECTION_S1));
         });
 
         panelRow2.add(projectionS1Label, BorderLayout.LINE_START);
-        panelRow2.add(projectionS1Bar, BorderLayout.CENTER);
+        panelRow2.add(projectionS1Slider, BorderLayout.CENTER);
         panelRow2.add(projectionS1Value, BorderLayout.LINE_END);
 
 
@@ -98,22 +105,119 @@ public class Window {
         panelRow3.setBorder(new EmptyBorder(10, 10, 10, 10));
 
         JLabel globeRotationLabel = new JLabel("Rotation");
-        globeRotationLabel.setPreferredSize(new Dimension(nameLabelWidth, 10));
+        globeRotationLabel.setPreferredSize(new Dimension(nameLabelWidth, labelHeight));
         JLabel globeRotationValue = new JLabel(String.format("%d°", (int)Constants.PROJECTION_S1));
-        globeRotationValue.setPreferredSize(new Dimension(valueLabelWidth, 10));
-        JScrollBar globeRotationBar = new JScrollBar(Adjustable.HORIZONTAL, (int)(Constants.GLOBE_ROTATION), 5, 0, 365);
-        globeRotationBar.addAdjustmentListener(e -> {
-            Constants.GLOBE_ROTATION = (double)globeRotationBar.getValue();
+        globeRotationValue.setPreferredSize(new Dimension(valueLabelWidth, labelHeight));
+        JSlider globeRotationSlider = new JSlider(0, 360, (int)Constants.GLOBE_ROTATION);
+        globeRotationSlider.addChangeListener(e -> {
+            Constants.GLOBE_ROTATION = (double)globeRotationSlider.getValue();
             globeRotationValue.setText(String.format("%d", (int)Constants.GLOBE_ROTATION));
         });
 
         panelRow3.add(globeRotationLabel, BorderLayout.LINE_START);
-        panelRow3.add(globeRotationBar, BorderLayout.CENTER);
+        panelRow3.add(globeRotationSlider, BorderLayout.CENTER);
         panelRow3.add(globeRotationValue, BorderLayout.LINE_END);
+
+
+        // show wireframe
+        JPanel panelRow4 = new JPanel();
+        panelRow4.setLayout(new BorderLayout(10, 0));
+        panelRow4.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        JLabel showWireframeLabel = new JLabel("Show Wireframe");
+        showWireframeLabel.setPreferredSize(new Dimension(nameLabelWidth, labelHeight));
+        JCheckBox showWireframeCheckbox = new JCheckBox();
+        showWireframeCheckbox.setSelected(Constants.GLOBE_SHOW_WIREFRAME);
+        showWireframeCheckbox.addChangeListener(e -> {
+            Constants.GLOBE_SHOW_WIREFRAME = showWireframeCheckbox.isSelected();
+        });
+
+        panelRow4.add(showWireframeLabel, BorderLayout.LINE_START);
+        panelRow4.add(showWireframeCheckbox, BorderLayout.LINE_END);
+
+
+        // coordinate 1
+        JPanel panelRow5 = new JPanel();
+        panelRow5.setLayout(new GridBagLayout());
+        panelRow5.setBorder(new EmptyBorder(10, 10, 0, 10));
+
+        JLabel startCoordLabel = new JLabel("Start");
+        //startCoordLabel.setPreferredSize(new Dimension(nameLabelWidth, labelHeight));
+        JTextField startCoordTextField = new JTextField();
+        //startCoordTextField.setPreferredSize(new Dimension(textFieldWidth, textFieldHeight));
+
+        GridBagConstraints c;
+
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.weightx = 1.0;
+        panelRow5.add(startCoordLabel, c);
+        c = new GridBagConstraints();
+        c.gridx = 1;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.weightx = 6.0;
+        panelRow5.add(startCoordTextField, c);
+
+        // coordinate 2
+        JPanel panelRow6 = new JPanel();
+        panelRow6.setLayout(new GridBagLayout());
+        panelRow6.setBorder(new EmptyBorder(10, 10, 0, 10));
+
+        JLabel endCoordLabel = new JLabel("End");
+        //startCoordLabel.setPreferredSize(new Dimension(nameLabelWidth, labelHeight));
+        JTextField endCoordTextField = new JTextField();
+        //startCoordTextField.setPreferredSize(new Dimension(textFieldWidth, textFieldHeight));
+
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.weightx = 1.0;
+        panelRow6.add(endCoordLabel, c);
+        c = new GridBagConstraints();
+        c.gridx = 1;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.weightx = 6.0;
+        panelRow6.add(endCoordTextField, c);
+
+
+        JPanel panelRow7 = new JPanel();
+        panelRow7.setLayout(new BorderLayout(10, 0));
+        panelRow7.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        JButton startButton = new JButton("Start");
+        startButton.addActionListener(e -> {
+            String regex = "^(-?\\d+\\.\\d*),\\s?(-?\\d+\\.\\d*)$";
+            Pattern pattern = Pattern.compile(regex);
+            Matcher matcherStart = pattern.matcher(startCoordTextField.getText().trim());
+            Matcher matcherEnd = pattern.matcher(startCoordTextField.getText().trim());
+
+            if(matcherStart.find()){
+                Constants.COORD_START_LAT = Double.parseDouble(matcherStart.group(1));
+                Constants.COORD_START_LONG = Double.parseDouble(matcherStart.group(2));
+            }
+
+            if(matcherEnd.find()){
+                Constants.COORD_END_LAT = Double.parseDouble(matcherEnd.group(1));
+                Constants.COORD_END_LONG = Double.parseDouble(matcherEnd.group(2));
+            }
+
+            System.out.printf("Start: %f %f\tEnd: %f %f", Constants.COORD_START_LAT, Constants.COORD_START_LONG, Constants.COORD_END_LAT, Constants.COORD_END_LONG);
+        });
+
+        panelRow7.add(startButton, BorderLayout.NORTH);
 
         panel.add(panelRow1);
         panel.add(panelRow2);
         panel.add(panelRow3);
+        panel.add(panelRow4);
+        panel.add(panelRow5);
+        panel.add(panelRow6);
+        panel.add(panelRow7);
 
         frame.add(panel);
         frame.setLocation(Constants.WINDOW_WIDTH, 1);
