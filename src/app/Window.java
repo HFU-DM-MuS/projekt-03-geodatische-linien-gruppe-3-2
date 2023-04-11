@@ -144,6 +144,8 @@ public class Window {
         JLabel startCoordLabel = new JLabel("Start");
         //startCoordLabel.setPreferredSize(new Dimension(nameLabelWidth, labelHeight));
         JTextField startCoordTextField = new JTextField();
+        //startCoordTextField.setText("51.477928, 0.0");
+        startCoordTextField.setText("0.0, 0.0");
         //startCoordTextField.setPreferredSize(new Dimension(textFieldWidth, textFieldHeight));
 
         GridBagConstraints c;
@@ -169,6 +171,7 @@ public class Window {
         JLabel endCoordLabel = new JLabel("End");
         //startCoordLabel.setPreferredSize(new Dimension(nameLabelWidth, labelHeight));
         JTextField endCoordTextField = new JTextField();
+        endCoordTextField.setText("0.0, 90.0");
         //startCoordTextField.setPreferredSize(new Dimension(textFieldWidth, textFieldHeight));
 
         c = new GridBagConstraints();
@@ -189,27 +192,36 @@ public class Window {
         panelRow7.setLayout(new BorderLayout(10, 0));
         panelRow7.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        JButton startButton = new JButton("Start");
-        startButton.addActionListener(e -> {
-            String regex = "^(-?\\d+\\.\\d*),\\s?(-?\\d+\\.\\d*)$";
-            Pattern pattern = Pattern.compile(regex);
-            Matcher matcherStart = pattern.matcher(startCoordTextField.getText().trim());
-            Matcher matcherEnd = pattern.matcher(startCoordTextField.getText().trim());
+        JButton runButton = new JButton("Start");
+        runButton.addActionListener(e -> {
+            if(!Constants.COORD_SHOW_ON_GLOBE){
+                String regex = "^(-?\\d+\\.\\d*),\\s?(-?\\d+\\.\\d*)$";
+                Pattern pattern = Pattern.compile(regex);
+                Matcher matcherStart = pattern.matcher(startCoordTextField.getText().trim());
+                Matcher matcherEnd = pattern.matcher(endCoordTextField.getText().trim());
 
-            if(matcherStart.find()){
-                Constants.COORD_START_LAT = Double.parseDouble(matcherStart.group(1));
-                Constants.COORD_START_LONG = Double.parseDouble(matcherStart.group(2));
+                if(matcherStart.find() && matcherEnd.find()){
+                    Constants.COORD_START_LAT = Double.parseDouble(matcherStart.group(1));
+                    Constants.COORD_START_LONG = Double.parseDouble(matcherStart.group(2));
+
+                    Constants.COORD_END_LAT = Double.parseDouble(matcherEnd.group(1));
+                    Constants.COORD_END_LONG = Double.parseDouble(matcherEnd.group(2));
+
+                    System.out.printf("Start: %f %f\tEnd: %f %f", Constants.COORD_START_LAT, Constants.COORD_START_LONG, Constants.COORD_END_LAT, Constants.COORD_END_LONG);
+
+                    Constants.COORD_SHOW_ON_GLOBE = true;
+                } else {
+                    System.err.printf("Coordinates must fit pattern %s", regex);
+                    Constants.COORD_SHOW_ON_GLOBE = false;
+                }
+            } else {
+                Constants.COORD_SHOW_ON_GLOBE = false;
             }
 
-            if(matcherEnd.find()){
-                Constants.COORD_END_LAT = Double.parseDouble(matcherEnd.group(1));
-                Constants.COORD_END_LONG = Double.parseDouble(matcherEnd.group(2));
-            }
-
-            System.out.printf("Start: %f %f\tEnd: %f %f", Constants.COORD_START_LAT, Constants.COORD_START_LONG, Constants.COORD_END_LAT, Constants.COORD_END_LONG);
+            runButton.setText(Constants.COORD_SHOW_ON_GLOBE ? "Stop" : "Start");
         });
 
-        panelRow7.add(startButton, BorderLayout.NORTH);
+        panelRow7.add(runButton, BorderLayout.NORTH);
 
         panel.add(panelRow1);
         panel.add(panelRow2);

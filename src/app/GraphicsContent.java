@@ -43,13 +43,18 @@ public class GraphicsContent extends JPanel {
         this.recalculateValues();
 
         this.paintCoordinateSystem();
-        if(Constants.GLOBE_SHOW_WIREFRAME){
+        if (Constants.GLOBE_SHOW_WIREFRAME) {
             this.paintGlobeWireframe();
         }
 
         this.paintCircumcircle();
 
-        this.drawGeoPosition(new Coordinate(0.0, 51.477928));
+        //this.drawGeoPosition(new Coordinate(0.0, 51.477928));
+        if(Constants.COORD_SHOW_ON_GLOBE){
+
+
+            this.paintGeodaticLine();
+        }
     }
 
     private void paintCoordinateSystem() {
@@ -104,7 +109,7 @@ public class GraphicsContent extends JPanel {
             // horizontal lines
             for (double latitude : lats) {
                 for (int longitude = 0; longitude < 360; longitude += step) {
-                    Coordinate c = new Coordinate(longitude, latitude);
+                    Coordinate c = new Coordinate(latitude, longitude);
                     Vector cv = c.toCartesian();
 
                     // no need to rotate horizontal lines
@@ -128,7 +133,7 @@ public class GraphicsContent extends JPanel {
             // vertical lines
             for (double longitude : longs) {
                 for (int latitude = -90; latitude < 90; latitude += step) {
-                    Coordinate c = new Coordinate(longitude, latitude);
+                    Coordinate c = new Coordinate(latitude, longitude);
                     Vector cv = c.toCartesian();
 
                     // apply rotation
@@ -201,6 +206,10 @@ public class GraphicsContent extends JPanel {
 
     private void drawGeoPosition(Coordinate coord) {
 
+        this.drawGeoPosition(coord, Color.RED);
+    }
+
+    private void drawGeoPosition(Coordinate coord, Color c) {
         Vector cv = coord.toCartesian();
 
         // apply rotation
@@ -210,15 +219,34 @@ public class GraphicsContent extends JPanel {
             Vector sv = projectionMatrix.doScreenProjection(cv);
 
             int dotSize = 6;
+            g.setColor(c);
 
             if (isVisible(cv)) {
-                g.fillOval((int)sv.x() - dotSize / 2, (int)sv.y() - dotSize / 2, dotSize, dotSize);
+                g.fillOval((int) sv.x() - dotSize / 2, (int) sv.y() - dotSize / 2, dotSize, dotSize);
             } else {
-                g.drawOval((int)sv.x() - dotSize / 2, (int)sv.y() - dotSize / 2, dotSize, dotSize);
+                g.drawOval((int) sv.x() - dotSize / 2, (int) sv.y() - dotSize / 2, dotSize, dotSize);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void paintGeodaticLine() {
+
+        Coordinate coordStart = new Coordinate(Constants.COORD_START_LAT, Constants.COORD_START_LONG);
+        Coordinate coordEnd = new Coordinate(Constants.COORD_END_LAT, Constants.COORD_END_LONG);
+
+        Vector vq = coordStart.toCartesian();
+        Vector vp = coordEnd.toCartesian();
+
+        double delta = Math.acos(
+                Math.toRadians(vp.dot(vq) / (vp.length() * vq.length()))
+        );
+        System.out.println(String.format("%.2f", Math.toDegrees(delta)));
+        System.out.println(String.format("%.2f", delta * Constants.GLOBE_SCALE));
+
+        this.drawGeoPosition(coordStart, Color.GREEN);
+        this.drawGeoPosition(coordEnd, Color.RED);
     }
 
     private void recalculateValues() {

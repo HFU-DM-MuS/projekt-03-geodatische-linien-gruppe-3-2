@@ -8,7 +8,7 @@ public class Coordinate {
 
     private final double r = Constants.GLOBE_SCALE;
 
-    public Coordinate(double lon, double lat) {
+    public Coordinate(double lat, double lon) {
         this.longitude = lon;
         this.latitude = lat;
     }

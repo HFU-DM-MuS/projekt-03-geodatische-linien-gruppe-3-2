@@ -23,5 +23,6 @@ public class Constants {
     public static double COORD_START_LONG = 0.0;
     public static double COORD_END_LAT = 0.0;
     public static double COORD_END_LONG = 0.0;
+    public static boolean COORD_SHOW_ON_GLOBE = false;
 
 }
