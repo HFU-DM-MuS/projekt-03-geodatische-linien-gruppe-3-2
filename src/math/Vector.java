@@ -40,10 +40,10 @@ public class Vector {
         this.y += other.y;
         this.z += other.z;
 
-        return this;
+        return new Vector(this.x + other.x, this.y + other.y, this.z + other.z);
     }
 
-    public Vector multiply(double f) {
+    public Vector scale(double f) {
         this.x *= f;
         this.y *= f;
         this.z *= f;
@@ -51,12 +51,16 @@ public class Vector {
         return this;
     }
 
+    public Vector multiply(double f) {
+        return new Vector(this.x * f, this.y * f, this.z * f);
+    }
+
     public Vector divide(double d) {
         this.x /= d;
         this.y /= d;
         this.z /= d;
 
-        return this;
+        return new Vector(this.x / d, this.y / d, this.z / d);
     }
 
     public double length() {
@@ -128,6 +132,10 @@ public class Vector {
         this.rotateWithMatrix(rotMat);
 
         return this;
+    }
+
+    public Vector copy() {
+        return new Vector(this);
     }
 
     @Override

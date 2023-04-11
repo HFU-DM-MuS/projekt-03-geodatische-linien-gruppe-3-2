@@ -14,8 +14,6 @@ public class GraphicsContent extends JPanel {
     private final ApplicationTime t;
     private final int w = Constants.WINDOW_WIDTH;
     private final int h = Constants.WINDOW_HEIGHT;
-    private final int cx = w / 2;
-    private final int cy = h / 2;
     private double deltaTime = 0.0;
     private double lastFrameTime = 0.0;
     private Matrix projectionMatrix;
@@ -50,10 +48,8 @@ public class GraphicsContent extends JPanel {
         this.paintCircumcircle();
 
         //this.drawGeoPosition(new Coordinate(0.0, 51.477928));
-        if(Constants.COORD_SHOW_ON_GLOBE){
-
-
-            this.paintGeodaticLine();
+        if (Constants.COORD_SHOW_ON_GLOBE) {
+            this.paintGeodesicLine();
         }
     }
 
@@ -112,7 +108,7 @@ public class GraphicsContent extends JPanel {
                     Coordinate c = new Coordinate(latitude, longitude);
                     Vector cv = c.toCartesian();
 
-                    // no need to rotate horizontal lines
+                    // apply rotation
                     cv.rotateWorldZ(Constants.GLOBE_ROTATION);
 
                     Vector sv = projectionMatrix.doScreenProjection(cv);
@@ -168,7 +164,7 @@ public class GraphicsContent extends JPanel {
 
             int step = 2;
             Vector cv_prev = new Vector(0.0, Math.cos(Math.toRadians(0)), Math.sin(Math.toRadians(0)));
-            cv_prev.rotateWorldY(-theta_p).rotateWorldZ(phi_p).multiply(Constants.GLOBE_SCALE);
+            cv_prev.rotateWorldY(-theta_p).rotateWorldZ(phi_p).scale(Constants.GLOBE_SCALE);
 
             g.setColor(Color.RED);
             g2d.setStroke(new BasicStroke(2.0f));
@@ -177,7 +173,7 @@ public class GraphicsContent extends JPanel {
             for (int t = step; t <= 360; t += step) {
                 Vector cv = new Vector(0.0, Math.cos(Math.toRadians(t)), Math.sin(Math.toRadians(t)));
 
-                cv.rotateWorldY(-theta_p).rotateWorldZ(phi_p).multiply(Constants.GLOBE_SCALE);
+                cv.rotateWorldY(-theta_p).rotateWorldZ(phi_p).scale(Constants.GLOBE_SCALE);
 
                 Vector sv = projectionMatrix.doScreenProjection(cv);
                 Vector sv_prev = projectionMatrix.doScreenProjection(cv_prev);
@@ -205,8 +201,25 @@ public class GraphicsContent extends JPanel {
     }
 
     private void drawGeoPosition(Coordinate coord) {
-
         this.drawGeoPosition(coord, Color.RED);
+    }
+
+    private void drawVector(Vector v, Color c) {
+        Vector o = new Vector();
+
+        v.rotateWorldZ(Constants.GLOBE_ROTATION);
+
+        try {
+            Vector sv = projectionMatrix.doScreenProjection(v);
+            Vector svo = projectionMatrix.doScreenProjection(o);
+
+            g.setColor(c);
+            g2d.setStroke(new BasicStroke(2.0f));
+            g.drawLine((int) svo.x(), (int) svo.y(), (int) sv.x(), (int) sv.y());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void drawGeoPosition(Coordinate coord, Color c) {
@@ -231,19 +244,73 @@ public class GraphicsContent extends JPanel {
         }
     }
 
-    private void paintGeodaticLine() {
+    private void paintGeodesicLine() {
 
         Coordinate coordStart = new Coordinate(Constants.COORD_START_LAT, Constants.COORD_START_LONG);
         Coordinate coordEnd = new Coordinate(Constants.COORD_END_LAT, Constants.COORD_END_LONG);
 
-        Vector vq = coordStart.toCartesian();
-        Vector vp = coordEnd.toCartesian();
+        Vector q = coordStart.toCartesian();
+        Vector p = coordEnd.toCartesian();
 
+
+        // calculate delta angle
         double delta = Math.acos(
-                Math.toRadians(vp.dot(vq) / (vp.length() * vq.length()))
+                Math.toRadians(p.dot(q) / (p.length() * q.length()))
         );
-        System.out.println(String.format("%.2f", Math.toDegrees(delta)));
-        System.out.println(String.format("%.2f", delta * Constants.GLOBE_SCALE));
+
+        // calculate distance
+        double distance = delta * Constants.GLOBE_SCALE;
+
+//        System.out.println(String.format("%.2f", Math.toDegrees(delta)));
+//        System.out.println(String.format("%.2f", distance));
+
+        Vector p_u = p.copy().normalize();
+        Vector n_u = p.cross(q).normalize();
+        Vector u_u = n_u.cross(p_u).normalize();
+
+
+        this.drawVector(p_u.copy().scale(Constants.GLOBE_SCALE), Color.RED);
+        this.drawVector(u_u.copy().scale(Constants.GLOBE_SCALE), Color.GREEN);
+        this.drawVector(n_u.copy().scale(Constants.GLOBE_SCALE), Color.BLUE);
+
+        double r = Constants.GLOBE_SCALE;
+
+        try {
+
+            g.setColor(Color.BLUE);
+            g2d.setStroke(new BasicStroke(2.0f));
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            double step = Math.toRadians(5.0);
+            Vector v_prev = p_u.multiply(r * Math.cos(0.0)).add(u_u.multiply(r * Math.sin(0.0)));
+            v_prev.rotateWorldZ(Constants.GLOBE_ROTATION);
+            for (double t = step; t < delta; t += step) {
+
+                Vector v = p_u.multiply(r * Math.cos(t)).add(u_u.multiply(r * Math.sin(t)));
+
+                // TODO: hä warum?
+                v.normalize().scale(r);
+
+                // apply rotation
+                v.rotateWorldZ(Constants.GLOBE_ROTATION);
+
+                Vector sv = projectionMatrix.doScreenProjection(v);
+                Vector sv_prev = projectionMatrix.doScreenProjection(v_prev);
+
+                int dotSize = 2;
+
+                if (isVisible(v) && isVisible(v_prev)) {
+                    g.drawLine((int) sv_prev.x(), (int) sv_prev.y(), (int) sv.x(), (int) sv.y());
+                } else {
+                    g.fillRect((int) sv.x() - dotSize / 2, (int) sv.y() - dotSize / 2, dotSize, dotSize);
+                }
+
+                v_prev = v;
+            }
+        } catch (
+                Exception e) {
+            e.printStackTrace();
+        }
 
         this.drawGeoPosition(coordStart, Color.GREEN);
         this.drawGeoPosition(coordEnd, Color.RED);
