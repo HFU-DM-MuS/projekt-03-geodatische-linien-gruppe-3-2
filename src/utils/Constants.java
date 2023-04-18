@@ -25,4 +25,7 @@ public class Constants {
     public static double COORD_END_LONG = 0.0;
     public static boolean COORD_SHOW_ON_GLOBE = false;
 
+    // debug
+    public static boolean DRAW_DEBUG_INFO = true;
+
 }

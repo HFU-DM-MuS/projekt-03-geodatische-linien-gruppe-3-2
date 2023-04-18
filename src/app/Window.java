@@ -54,8 +54,8 @@ public class Window {
         frame.setResizable(true);
 
         JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(8, 1));
-        panel.setPreferredSize(new Dimension(400, 300));
+        panel.setLayout(new GridLayout(9, 1));
+        panel.setPreferredSize(new Dimension(400, 350));
 
 
 
@@ -137,10 +137,26 @@ public class Window {
         panelRow4.add(showWireframeCheckbox, BorderLayout.LINE_END);
 
 
-        // divider
+        // debug info
         JPanel panelRow5 = new JPanel();
-        panelRow5.setLayout(new GridBagLayout());
-        panelRow5.setBorder(new MatteBorder(1, 0, 0, 0, Color.BLACK));
+        panelRow5.setLayout(new BorderLayout(10, 0));
+        panelRow5.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        JLabel showDebugInfoLabel = new JLabel("Show Debug Info");
+        showDebugInfoLabel.setPreferredSize(new Dimension(nameLabelWidth, labelHeight));
+        JCheckBox showDebugInfoCheckbox = new JCheckBox();
+        showDebugInfoCheckbox.setSelected(Constants.GLOBE_SHOW_WIREFRAME);
+        showDebugInfoCheckbox.addChangeListener(e -> {
+            Constants.DRAW_DEBUG_INFO = showDebugInfoCheckbox.isSelected();
+        });
+
+        panelRow5.add(showDebugInfoLabel, BorderLayout.LINE_START);
+        panelRow5.add(showDebugInfoCheckbox, BorderLayout.LINE_END);
+
+        // divider
+        JPanel panelRow6 = new JPanel();
+        panelRow6.setLayout(new GridBagLayout());
+        panelRow6.setBorder(new MatteBorder(1, 0, 0, 0, Color.BLACK));
 
         JLabel labelCoord = new JLabel("Distance between two coordinates");
 
@@ -150,18 +166,18 @@ public class Window {
         c.gridx = 0;
         c.gridy = 0;
         c.fill = GridBagConstraints.HORIZONTAL;
-        panelRow5.add(labelCoord);
+        panelRow6.add(labelCoord);
 
         // coordinate 1
-        JPanel panelRow6 = new JPanel();
-        panelRow6.setLayout(new GridBagLayout());
-        panelRow6.setBorder(new EmptyBorder(10, 10, 0, 10));
+        JPanel panelRow7 = new JPanel();
+        panelRow7.setLayout(new GridBagLayout());
+        panelRow7.setBorder(new EmptyBorder(10, 10, 0, 10));
 
         JLabel startCoordLabel = new JLabel("Start");
         //startCoordLabel.setPreferredSize(new Dimension(nameLabelWidth, labelHeight));
         JTextField startCoordTextField = new JTextField();
         //startCoordTextField.setText("51.477928, 0.0");
-        startCoordTextField.setText("45.0, 0.0");
+        startCoordTextField.setText("45.0, 90.0");
         //startCoordTextField.setPreferredSize(new Dimension(textFieldWidth, textFieldHeight));
 
 
@@ -171,18 +187,18 @@ public class Window {
         c.anchor = GridBagConstraints.WEST;
         c.fill = GridBagConstraints.HORIZONTAL;
         c.weightx = 1.0;
-        panelRow6.add(startCoordLabel, c);
+        panelRow7.add(startCoordLabel, c);
         c = new GridBagConstraints();
         c.gridx = 1;
         c.anchor = GridBagConstraints.WEST;
         c.fill = GridBagConstraints.HORIZONTAL;
         c.weightx = 6.0;
-        panelRow6.add(startCoordTextField, c);
+        panelRow7.add(startCoordTextField, c);
 
         // coordinate 2
-        JPanel panelRow7 = new JPanel();
-        panelRow7.setLayout(new GridBagLayout());
-        panelRow7.setBorder(new EmptyBorder(10, 10, 0, 10));
+        JPanel panelRow8 = new JPanel();
+        panelRow8.setLayout(new GridBagLayout());
+        panelRow8.setBorder(new EmptyBorder(10, 10, 0, 10));
 
         JLabel endCoordLabel = new JLabel("End");
         //startCoordLabel.setPreferredSize(new Dimension(nameLabelWidth, labelHeight));
@@ -195,18 +211,18 @@ public class Window {
         c.anchor = GridBagConstraints.WEST;
         c.fill = GridBagConstraints.HORIZONTAL;
         c.weightx = 1.0;
-        panelRow7.add(endCoordLabel, c);
+        panelRow8.add(endCoordLabel, c);
         c = new GridBagConstraints();
         c.gridx = 1;
         c.anchor = GridBagConstraints.WEST;
         c.fill = GridBagConstraints.HORIZONTAL;
         c.weightx = 6.0;
-        panelRow7.add(endCoordTextField, c);
+        panelRow8.add(endCoordTextField, c);
 
 
-        JPanel panelRow8 = new JPanel();
-        panelRow8.setLayout(new BorderLayout(10, 0));
-        panelRow8.setBorder(new EmptyBorder(10, 10, 10, 10));
+        JPanel panelRow9 = new JPanel();
+        panelRow9.setLayout(new BorderLayout(10, 0));
+        panelRow9.setBorder(new EmptyBorder(10, 10, 10, 10));
 
         JButton runButton = new JButton("Start");
         runButton.addActionListener(e -> {
@@ -237,7 +253,7 @@ public class Window {
             runButton.setText(Constants.COORD_SHOW_ON_GLOBE ? "Stop" : "Start");
         });
 
-        panelRow8.add(runButton, BorderLayout.NORTH);
+        panelRow9.add(runButton, BorderLayout.NORTH);
 
         panel.add(panelRow1);
         panel.add(panelRow2);
@@ -247,6 +263,7 @@ public class Window {
         panel.add(panelRow6);
         panel.add(panelRow7);
         panel.add(panelRow8);
+        panel.add(panelRow9);
 
         frame.add(panel);
         frame.setLocation(Constants.WINDOW_WIDTH, 1);

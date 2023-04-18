@@ -2,6 +2,7 @@ package app;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 
 import math.Coordinate;
 import math.Matrix;
@@ -24,6 +25,8 @@ public class GraphicsContent extends JPanel {
     private double phi_p;
     private double theta_p;
 
+    private final ArrayList<String> debugStrings = new ArrayList<String>();
+
     public GraphicsContent(ApplicationTime thread) {
         this.t = thread;
     }
@@ -31,6 +34,10 @@ public class GraphicsContent extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+
+        if(Constants.DRAW_DEBUG_INFO){
+            this.debugStrings.clear();
+        }
 
         this.g = g;
         this.g2d = (Graphics2D) g;
@@ -47,9 +54,13 @@ public class GraphicsContent extends JPanel {
 
         this.paintCircumcircle();
 
-        //this.drawGeoPosition(new Coordinate(0.0, 51.477928));
         if (Constants.COORD_SHOW_ON_GLOBE) {
             this.paintGeodesicLine();
+        }
+
+        if(Constants.DRAW_DEBUG_INFO){
+            this.addDebugInfo(String.format("%.1f FPS", 1.0 / deltaTime));
+            this.drawDebugInfo();
         }
     }
 
@@ -65,8 +76,7 @@ public class GraphicsContent extends JPanel {
         g.drawString("x-axis", w - 50, h / 2 + 10);
         g.drawString("y-axis", w / 2 + 10, 10);
 
-        // draw fps
-        g.drawString(String.format("%.1f FPS", 1.0 / deltaTime), 10, 10);
+
 
         /*
         Vector ux = new Vector(100.0, 0.0, 0.0);
@@ -289,7 +299,7 @@ public class GraphicsContent extends JPanel {
                 Vector v = p_u.multiply(r * Math.cos(t)).add(u_u.multiply(r * Math.sin(t)));
 
                 // TODO: hä warum?
-                v.normalize().scale(r);
+                // v.normalize().scale(r);
 
                 // apply rotation
                 v.rotateWorldZ(Constants.GLOBE_ROTATION);
@@ -342,5 +352,21 @@ public class GraphicsContent extends JPanel {
                                 )
                 )
         );
+    }
+
+    private void addDebugInfo(String line) {
+        this.debugStrings.add(line);
+    }
+
+    private void drawDebugInfo() {
+        int x = 10;
+        int y = 10;
+        g.setColor(Color.BLACK);
+
+        for(String line : this.debugStrings) {
+            g.drawString(line, x, y);
+
+            y += 15;
+        }
     }
 }
