@@ -44,10 +44,10 @@ public class GraphicsContent extends JPanel {
 
         deltaTime = t.getTimeInSeconds() - lastFrameTime;
         lastFrameTime = t.getTimeInSeconds();
-
         this.recalculateValues();
 
         this.paintCoordinateSystem();
+
         if (Constants.GLOBE_SHOW_WIREFRAME) {
             this.paintGlobeWireframe();
         }
@@ -263,6 +263,10 @@ public class GraphicsContent extends JPanel {
         Vector p = coordEnd.toCartesian();
 
 
+
+        this.drawVector(q, Color.GREEN);
+        this.drawVector(p, Color.RED);
+
         // calculate delta angle
         double delta = Math.acos(
                 Math.toRadians(p.dot(q) / (p.length() * q.length()))
@@ -271,17 +275,21 @@ public class GraphicsContent extends JPanel {
         // calculate distance
         double distance = delta * Constants.GLOBE_SCALE;
 
-//        System.out.println(String.format("%.2f", Math.toDegrees(delta)));
-//        System.out.println(String.format("%.2f", distance));
-
         Vector p_u = p.copy().normalize();
         Vector n_u = p.cross(q).normalize();
         Vector u_u = n_u.cross(p_u).normalize();
 
+        this.addDebugInfo(String.format("q: %s", q));
+        this.addDebugInfo(String.format("p: %s", p));
+        this.addDebugInfo(String.format("p x q: %s", p.cross(q)));
 
+        this.drawVector(n_u.scale(Constants.GLOBE_SCALE), Color.BLUE);
+        /*
         this.drawVector(p_u.copy().scale(Constants.GLOBE_SCALE), Color.RED);
         this.drawVector(u_u.copy().scale(Constants.GLOBE_SCALE), Color.GREEN);
         this.drawVector(n_u.copy().scale(Constants.GLOBE_SCALE), Color.BLUE);
+
+         */
 
         double r = Constants.GLOBE_SCALE;
 
