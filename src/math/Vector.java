@@ -36,9 +36,12 @@ public class Vector {
     }
 
     public Vector add(Vector other) {
+        /*
         this.x += other.x;
         this.y += other.y;
         this.z += other.z;
+
+         */
 
         return new Vector(this.x + other.x, this.y + other.y, this.z + other.z);
     }

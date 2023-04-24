@@ -15,6 +15,9 @@ public class GraphicsContent extends JPanel {
     private final ApplicationTime t;
     private final int w = Constants.WINDOW_WIDTH;
     private final int h = Constants.WINDOW_HEIGHT;
+
+    private final int cx = w/2;
+    private final int cy = h / 2;
     private double deltaTime = 0.0;
     private double lastFrameTime = 0.0;
     private Matrix projectionMatrix;
@@ -78,10 +81,19 @@ public class GraphicsContent extends JPanel {
 
 
 
-        /*
-        Vector ux = new Vector(100.0, 0.0, 0.0);
-        Vector uy = new Vector(0.0, 100.0, 0.0);
-        Vector uz = new Vector(0.0, 0.0, 100.0);
+
+        Vector ux = new Vector(1.0, 0.0, 0.0);
+
+        Vector uy = new Vector(0.0, 1.0, 0.0);
+        Vector uz = new Vector(0.0, 0.0, 1.0);
+
+        ux.scale(Constants.GLOBE_SCALE);
+        uy.scale(Constants.GLOBE_SCALE);
+        uz.scale(Constants.GLOBE_SCALE);
+
+        ux.rotateWorldZ(Constants.GLOBE_ROTATION);
+        uy.rotateWorldZ(Constants.GLOBE_ROTATION);
+        uz.rotateWorldZ(Constants.GLOBE_ROTATION);
 
         try {
             Vector sx = projectionMatrix.doScreenProjection(ux);
@@ -103,7 +115,7 @@ public class GraphicsContent extends JPanel {
         } catch (Exception e) {
             e.printStackTrace();
         }
-         */
+
     }
 
     private void paintGlobeWireframe() {
@@ -259,18 +271,19 @@ public class GraphicsContent extends JPanel {
         Coordinate coordStart = new Coordinate(Constants.COORD_START_LAT, Constants.COORD_START_LONG);
         Coordinate coordEnd = new Coordinate(Constants.COORD_END_LAT, Constants.COORD_END_LONG);
 
-        Vector q = coordStart.toCartesian();
-        Vector p = coordEnd.toCartesian();
+        Vector q = coordEnd.toCartesian();
+        Vector p = coordStart.toCartesian();
 
 
+        this.drawVector(p, Color.PINK);
+        this.drawVector(q, Color.ORANGE);
 
-        this.drawVector(q, Color.GREEN);
-        this.drawVector(p, Color.RED);
-
+        // TODO: fix
         // calculate delta angle
         double delta = Math.acos(
-                Math.toRadians(p.dot(q) / (p.length() * q.length()))
+                p.dot(q) / (p.length() * q.length())
         );
+        this.addDebugInfo(String.format("delta: %.2f", delta));
 
         // calculate distance
         double distance = delta * Constants.GLOBE_SCALE;
@@ -302,12 +315,12 @@ public class GraphicsContent extends JPanel {
             double step = Math.toRadians(5.0);
             Vector v_prev = p_u.multiply(r * Math.cos(0.0)).add(u_u.multiply(r * Math.sin(0.0)));
             v_prev.rotateWorldZ(Constants.GLOBE_ROTATION);
-            for (double t = step; t < delta; t += step) {
+            for (double t = step; t <= delta; t += step) {
 
                 Vector v = p_u.multiply(r * Math.cos(t)).add(u_u.multiply(r * Math.sin(t)));
 
-                // TODO: hä warum?
-                // v.normalize().scale(r);
+
+                v.normalize().scale(r);
 
                 // apply rotation
                 v.rotateWorldZ(Constants.GLOBE_ROTATION);
