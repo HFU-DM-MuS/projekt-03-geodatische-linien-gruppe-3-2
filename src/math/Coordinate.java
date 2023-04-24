@@ -1,12 +1,12 @@
 package math;
 
-import utils.Constants;
+import utils.Settings;
 
 public class Coordinate {
     private final double longitude;
     private final double latitude;
 
-    private final double r = Constants.GLOBE_SCALE;
+    private final double r = Settings.GLOBE_SCALE;
 
     public Coordinate(double lat, double lon) {
         this.longitude = lon;

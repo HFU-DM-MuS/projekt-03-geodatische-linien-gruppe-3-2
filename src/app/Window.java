@@ -1,11 +1,10 @@
 package app;
 
 import utils.ApplicationTime;
-import utils.Constants;
+import utils.Settings;
 import utils.FrameUpdater;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import java.awt.*;
@@ -26,7 +25,7 @@ public class Window {
         applicationTimeThread.start();
         FrameUpdater frameUpdater = new FrameUpdater(createFrames(applicationTimeThread));
         Timer timer = new Timer();
-        timer.scheduleAtFixedRate(frameUpdater, 100, (int) Constants.TPF);
+        timer.scheduleAtFixedRate(frameUpdater, 100, (int) Settings.TPF);
     }
 
     private ArrayList<JFrame> createFrames(ApplicationTime applicationTimeThread) {
@@ -54,8 +53,8 @@ public class Window {
         frame.setResizable(true);
 
         JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(9, 1));
-        panel.setPreferredSize(new Dimension(400, 350));
+        panel.setLayout(new GridLayout(10, 1));
+        panel.setPreferredSize(new Dimension(400, 375));
 
 
 
@@ -66,12 +65,12 @@ public class Window {
 
         JLabel projectionAlphaLabel = new JLabel("Alpha");
         projectionAlphaLabel.setPreferredSize(new Dimension(nameLabelWidth, labelHeight));
-        JLabel projectionAlphaValue = new JLabel(String.format("%d°", (int)Constants.PROJECTION_ALPHA));
+        JLabel projectionAlphaValue = new JLabel(String.format("%d°", (int) Settings.PROJECTION_ALPHA));
         projectionAlphaValue.setPreferredSize(new Dimension(valueLabelWidth, labelHeight));
-        JSlider projectionAlphaSlider = new JSlider(0, 360, (int)Constants.PROJECTION_ALPHA);
+        JSlider projectionAlphaSlider = new JSlider(0, 360, (int) Settings.PROJECTION_ALPHA);
         projectionAlphaSlider.addChangeListener(e -> {
-            Constants.PROJECTION_ALPHA = (double)projectionAlphaSlider.getValue();
-            projectionAlphaValue.setText(String.format("%d", (int)Constants.PROJECTION_ALPHA));
+            Settings.PROJECTION_ALPHA = (double)projectionAlphaSlider.getValue();
+            projectionAlphaValue.setText(String.format("%d", (int) Settings.PROJECTION_ALPHA));
         });
 
         panelRow1.add(projectionAlphaLabel, BorderLayout.LINE_START);
@@ -87,12 +86,12 @@ public class Window {
 
         JLabel projectionS1Label = new JLabel("s1");
         projectionS1Label.setPreferredSize(new Dimension(nameLabelWidth, labelHeight));
-        JLabel projectionS1Value = new JLabel(String.format("%.2f", Constants.PROJECTION_S1));
+        JLabel projectionS1Value = new JLabel(String.format("%.2f", Settings.PROJECTION_S1));
         projectionS1Value.setPreferredSize(new Dimension(valueLabelWidth, labelHeight));
-        JSlider projectionS1Slider = new JSlider(0, 100, (int)(Constants.PROJECTION_S1 * 100));
+        JSlider projectionS1Slider = new JSlider(0, 100, (int)(Settings.PROJECTION_S1 * 100));
         projectionS1Slider.addChangeListener(e -> {
-            Constants.PROJECTION_S1 = (double)projectionS1Slider.getValue() / 100.0;
-            projectionS1Value.setText(String.format("%.2f", Constants.PROJECTION_S1));
+            Settings.PROJECTION_S1 = (double)projectionS1Slider.getValue() / 100.0;
+            projectionS1Value.setText(String.format("%.2f", Settings.PROJECTION_S1));
         });
 
         panelRow2.add(projectionS1Label, BorderLayout.LINE_START);
@@ -107,12 +106,12 @@ public class Window {
 
         JLabel globeRotationLabel = new JLabel("Rotation");
         globeRotationLabel.setPreferredSize(new Dimension(nameLabelWidth, labelHeight));
-        JLabel globeRotationValue = new JLabel(String.format("%d°", (int)Constants.PROJECTION_S1));
+        JLabel globeRotationValue = new JLabel(String.format("%d°", (int) Settings.GLOBE_ROTATION));
         globeRotationValue.setPreferredSize(new Dimension(valueLabelWidth, labelHeight));
-        JSlider globeRotationSlider = new JSlider(0, 360, (int)Constants.GLOBE_ROTATION);
+        JSlider globeRotationSlider = new JSlider(0, 360, (int) Settings.GLOBE_ROTATION);
         globeRotationSlider.addChangeListener(e -> {
-            Constants.GLOBE_ROTATION = (double)globeRotationSlider.getValue();
-            globeRotationValue.setText(String.format("%d", (int)Constants.GLOBE_ROTATION));
+            Settings.GLOBE_ROTATION = (double)globeRotationSlider.getValue();
+            globeRotationValue.setText(String.format("%d", (int) Settings.GLOBE_ROTATION));
         });
 
         panelRow3.add(globeRotationLabel, BorderLayout.LINE_START);
@@ -128,9 +127,9 @@ public class Window {
         JLabel showWireframeLabel = new JLabel("Show Wireframe");
         showWireframeLabel.setPreferredSize(new Dimension(nameLabelWidth, labelHeight));
         JCheckBox showWireframeCheckbox = new JCheckBox();
-        showWireframeCheckbox.setSelected(Constants.GLOBE_SHOW_WIREFRAME);
+        showWireframeCheckbox.setSelected(Settings.GLOBE_SHOW_WIREFRAME);
         showWireframeCheckbox.addChangeListener(e -> {
-            Constants.GLOBE_SHOW_WIREFRAME = showWireframeCheckbox.isSelected();
+            Settings.GLOBE_SHOW_WIREFRAME = showWireframeCheckbox.isSelected();
         });
 
         panelRow4.add(showWireframeLabel, BorderLayout.LINE_START);
@@ -145,9 +144,9 @@ public class Window {
         JLabel showDebugInfoLabel = new JLabel("Show Debug Info");
         showDebugInfoLabel.setPreferredSize(new Dimension(nameLabelWidth, labelHeight));
         JCheckBox showDebugInfoCheckbox = new JCheckBox();
-        showDebugInfoCheckbox.setSelected(Constants.GLOBE_SHOW_WIREFRAME);
+        showDebugInfoCheckbox.setSelected(Settings.GLOBE_SHOW_WIREFRAME);
         showDebugInfoCheckbox.addChangeListener(e -> {
-            Constants.DRAW_DEBUG_INFO = showDebugInfoCheckbox.isSelected();
+            Settings.DRAW_DEBUG_INFO = showDebugInfoCheckbox.isSelected();
         });
 
         panelRow5.add(showDebugInfoLabel, BorderLayout.LINE_START);
@@ -226,34 +225,54 @@ public class Window {
 
         JButton runButton = new JButton("Start");
         runButton.addActionListener(e -> {
-            if(!Constants.COORD_SHOW_ON_GLOBE){
+            if(!Settings.COORD_SHOW_ON_GLOBE){
                 String regex = "^(-?\\d+\\.\\d*),\\s?(-?\\d+\\.\\d*)$";
                 Pattern pattern = Pattern.compile(regex);
                 Matcher matcherStart = pattern.matcher(startCoordTextField.getText().trim());
                 Matcher matcherEnd = pattern.matcher(endCoordTextField.getText().trim());
 
                 if(matcherStart.find() && matcherEnd.find()){
-                    Constants.COORD_START_LAT = Double.parseDouble(matcherStart.group(1));
-                    Constants.COORD_START_LONG = Double.parseDouble(matcherStart.group(2));
+                    Settings.COORD_START_LAT = Double.parseDouble(matcherStart.group(1));
+                    Settings.COORD_START_LONG = Double.parseDouble(matcherStart.group(2));
 
-                    Constants.COORD_END_LAT = Double.parseDouble(matcherEnd.group(1));
-                    Constants.COORD_END_LONG = Double.parseDouble(matcherEnd.group(2));
+                    Settings.COORD_END_LAT = Double.parseDouble(matcherEnd.group(1));
+                    Settings.COORD_END_LONG = Double.parseDouble(matcherEnd.group(2));
 
                     /*System.out.printf("Start: %f %f\tEnd: %f %f", Constants.COORD_START_LAT, Constants.COORD_START_LONG, Constants.COORD_END_LAT, Constants.COORD_END_LONG);*/
 
-                    Constants.COORD_SHOW_ON_GLOBE = true;
+                    Settings.COORD_SHOW_ON_GLOBE = true;
                 } else {
                     System.err.printf("Coordinates must fit pattern %s", regex);
-                    Constants.COORD_SHOW_ON_GLOBE = false;
+                    Settings.COORD_SHOW_ON_GLOBE = false;
                 }
             } else {
-                Constants.COORD_SHOW_ON_GLOBE = false;
+                Settings.COORD_SHOW_ON_GLOBE = false;
             }
 
-            runButton.setText(Constants.COORD_SHOW_ON_GLOBE ? "Stop" : "Start");
+            runButton.setText(Settings.COORD_SHOW_ON_GLOBE ? "Stop" : "Start");
         });
 
         panelRow9.add(runButton, BorderLayout.NORTH);
+
+
+        // globe rotation slider
+        JPanel panelRow10 = new JPanel();
+        panelRow10.setLayout(new BorderLayout(10, 0));
+        panelRow10.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        JLabel flightProgressLabel = new JLabel("Rotation");
+        flightProgressLabel.setPreferredSize(new Dimension(nameLabelWidth, labelHeight));
+        JLabel flightProgressValue = new JLabel(String.format("%.2f", Settings.FLIGHT_PROGRESS));
+        flightProgressValue.setPreferredSize(new Dimension(valueLabelWidth, labelHeight));
+        JSlider flightProgressSlider = new JSlider(0, 100, (int) Settings.FLIGHT_PROGRESS);
+        flightProgressSlider.addChangeListener(e -> {
+            Settings.FLIGHT_PROGRESS = (double)flightProgressSlider.getValue() / 100.0;
+            flightProgressValue.setText(String.format("%d", (int) (Settings.FLIGHT_PROGRESS * 100.0)));
+        });
+
+        panelRow10.add(flightProgressLabel, BorderLayout.LINE_START);
+        panelRow10.add(flightProgressSlider, BorderLayout.CENTER);
+        panelRow10.add(flightProgressValue, BorderLayout.LINE_END);
 
         panel.add(panelRow1);
         panel.add(panelRow2);
@@ -264,9 +283,10 @@ public class Window {
         panel.add(panelRow7);
         panel.add(panelRow8);
         panel.add(panelRow9);
+        panel.add(panelRow10);
 
         frame.add(panel);
-        frame.setLocation(Constants.WINDOW_WIDTH, 1);
+        frame.setLocation(Settings.WINDOW_WIDTH, 1);
         frame.pack();
         frame.setVisible(true);
 

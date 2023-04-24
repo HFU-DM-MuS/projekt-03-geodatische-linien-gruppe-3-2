@@ -7,7 +7,7 @@ public class ApplicationTime extends Thread {
     public double timeSinceStart = 0;
     public long currentTime = 0;
     public long formerTime = 0;
-    private double timeScale = Constants.TIMESCALE;
+    private double timeScale = Settings.TIMESCALE;
     private final AtomicBoolean isPaused = new AtomicBoolean(false);
     private final AtomicBoolean running = new AtomicBoolean(true);
 

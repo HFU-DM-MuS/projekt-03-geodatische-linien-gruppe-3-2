@@ -1,6 +1,6 @@
 package utils;
 
-public class Constants {
+public class Settings {
     public static int WINDOW_WIDTH = 1000;
     public static int WINDOW_HEIGHT = 800;
 
@@ -27,5 +27,6 @@ public class Constants {
 
     // debug
     public static boolean DRAW_DEBUG_INFO = true;
+    public static double FLIGHT_PROGRESS = 0.0;
 
 }

@@ -8,13 +8,13 @@ import math.Coordinate;
 import math.Matrix;
 import math.Vector;
 import utils.ApplicationTime;
-import utils.Constants;
+import utils.Settings;
 
 public class GraphicsContent extends JPanel {
 
     private final ApplicationTime t;
-    private final int w = Constants.WINDOW_WIDTH;
-    private final int h = Constants.WINDOW_HEIGHT;
+    private final int w = Settings.WINDOW_WIDTH;
+    private final int h = Settings.WINDOW_HEIGHT;
 
     private final int cx = w/2;
     private final int cy = h / 2;
@@ -38,7 +38,7 @@ public class GraphicsContent extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        if(Constants.DRAW_DEBUG_INFO){
+        if(Settings.DRAW_DEBUG_INFO){
             this.debugStrings.clear();
         }
 
@@ -51,17 +51,17 @@ public class GraphicsContent extends JPanel {
 
         this.paintCoordinateSystem();
 
-        if (Constants.GLOBE_SHOW_WIREFRAME) {
+        if (Settings.GLOBE_SHOW_WIREFRAME) {
             this.paintGlobeWireframe();
         }
 
         this.paintCircumcircle();
 
-        if (Constants.COORD_SHOW_ON_GLOBE) {
+        if (Settings.COORD_SHOW_ON_GLOBE) {
             this.paintGeodesicLine();
         }
 
-        if(Constants.DRAW_DEBUG_INFO){
+        if(Settings.DRAW_DEBUG_INFO){
             this.addDebugInfo(String.format("%.1f FPS", 1.0 / deltaTime));
             this.drawDebugInfo();
         }
@@ -80,20 +80,17 @@ public class GraphicsContent extends JPanel {
         g.drawString("y-axis", w / 2 + 10, 10);
 
 
-
-
         Vector ux = new Vector(1.0, 0.0, 0.0);
-
         Vector uy = new Vector(0.0, 1.0, 0.0);
         Vector uz = new Vector(0.0, 0.0, 1.0);
 
-        ux.scale(Constants.GLOBE_SCALE);
-        uy.scale(Constants.GLOBE_SCALE);
-        uz.scale(Constants.GLOBE_SCALE);
+        ux.scale(Settings.GLOBE_SCALE);
+        uy.scale(Settings.GLOBE_SCALE);
+        uz.scale(Settings.GLOBE_SCALE);
 
-        ux.rotateWorldZ(Constants.GLOBE_ROTATION);
-        uy.rotateWorldZ(Constants.GLOBE_ROTATION);
-        uz.rotateWorldZ(Constants.GLOBE_ROTATION);
+        ux.rotateWorldZ(Settings.GLOBE_ROTATION);
+        uy.rotateWorldZ(Settings.GLOBE_ROTATION);
+        uz.rotateWorldZ(Settings.GLOBE_ROTATION);
 
         try {
             Vector sx = projectionMatrix.doScreenProjection(ux);
@@ -131,7 +128,7 @@ public class GraphicsContent extends JPanel {
                     Vector cv = c.toCartesian();
 
                     // apply rotation
-                    cv.rotateWorldZ(Constants.GLOBE_ROTATION);
+                    cv.rotateWorldZ(Settings.GLOBE_ROTATION);
 
                     Vector sv = projectionMatrix.doScreenProjection(cv);
 
@@ -155,7 +152,7 @@ public class GraphicsContent extends JPanel {
                     Vector cv = c.toCartesian();
 
                     // apply rotation
-                    cv.rotateWorldZ(Constants.GLOBE_ROTATION);
+                    cv.rotateWorldZ(Settings.GLOBE_ROTATION);
 
                     Vector sv = projectionMatrix.doScreenProjection(cv);
 
@@ -186,7 +183,7 @@ public class GraphicsContent extends JPanel {
 
             int step = 2;
             Vector cv_prev = new Vector(0.0, Math.cos(Math.toRadians(0)), Math.sin(Math.toRadians(0)));
-            cv_prev.rotateWorldY(-theta_p).rotateWorldZ(phi_p).scale(Constants.GLOBE_SCALE);
+            cv_prev.rotateWorldY(-theta_p).rotateWorldZ(phi_p).scale(Settings.GLOBE_SCALE);
 
             g.setColor(Color.RED);
             g2d.setStroke(new BasicStroke(2.0f));
@@ -195,7 +192,7 @@ public class GraphicsContent extends JPanel {
             for (int t = step; t <= 360; t += step) {
                 Vector cv = new Vector(0.0, Math.cos(Math.toRadians(t)), Math.sin(Math.toRadians(t)));
 
-                cv.rotateWorldY(-theta_p).rotateWorldZ(phi_p).scale(Constants.GLOBE_SCALE);
+                cv.rotateWorldY(-theta_p).rotateWorldZ(phi_p).scale(Settings.GLOBE_SCALE);
 
                 Vector sv = projectionMatrix.doScreenProjection(cv);
                 Vector sv_prev = projectionMatrix.doScreenProjection(cv_prev);
@@ -211,7 +208,7 @@ public class GraphicsContent extends JPanel {
 
     @Override
     public Dimension getPreferredSize() {
-        return new Dimension(Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT);
+        return new Dimension(Settings.WINDOW_WIDTH, Settings.WINDOW_HEIGHT);
     }
 
     private boolean isVisible(Vector point) {
@@ -226,10 +223,11 @@ public class GraphicsContent extends JPanel {
         this.drawGeoPosition(coord, Color.RED);
     }
 
-    private void drawVector(Vector v, Color c) {
+    private void drawVector(Vector _v, Color c) {
         Vector o = new Vector();
+        Vector v = _v.copy();
 
-        v.rotateWorldZ(Constants.GLOBE_ROTATION);
+        v.rotateWorldZ(Settings.GLOBE_ROTATION);
 
         try {
             Vector sv = projectionMatrix.doScreenProjection(v);
@@ -247,8 +245,7 @@ public class GraphicsContent extends JPanel {
     private void drawGeoPosition(Coordinate coord, Color c) {
         Vector cv = coord.toCartesian();
 
-        // apply rotation
-        cv.rotateWorldZ(Constants.GLOBE_ROTATION);
+        cv.rotateWorldZ(Settings.GLOBE_ROTATION);
 
         try {
             Vector sv = projectionMatrix.doScreenProjection(cv);
@@ -268,43 +265,30 @@ public class GraphicsContent extends JPanel {
 
     private void paintGeodesicLine() {
 
-        Coordinate coordStart = new Coordinate(Constants.COORD_START_LAT, Constants.COORD_START_LONG);
-        Coordinate coordEnd = new Coordinate(Constants.COORD_END_LAT, Constants.COORD_END_LONG);
+        Coordinate coordStart = new Coordinate(Settings.COORD_START_LAT, Settings.COORD_START_LONG);
+        Coordinate coordEnd = new Coordinate(Settings.COORD_END_LAT, Settings.COORD_END_LONG);
 
-        Vector q = coordEnd.toCartesian();
         Vector p = coordStart.toCartesian();
+        Vector q = coordEnd.toCartesian();
 
 
         this.drawVector(p, Color.PINK);
         this.drawVector(q, Color.ORANGE);
 
-        // TODO: fix
         // calculate delta angle
         double delta = Math.acos(
                 p.dot(q) / (p.length() * q.length())
         );
-        this.addDebugInfo(String.format("delta: %.2f", delta));
 
         // calculate distance
-        double distance = delta * Constants.GLOBE_SCALE;
+        double distance = delta * Settings.GLOBE_SCALE;
 
         Vector p_u = p.copy().normalize();
         Vector n_u = p.cross(q).normalize();
         Vector u_u = n_u.cross(p_u).normalize();
 
-        this.addDebugInfo(String.format("q: %s", q));
-        this.addDebugInfo(String.format("p: %s", p));
-        this.addDebugInfo(String.format("p x q: %s", p.cross(q)));
 
-        this.drawVector(n_u.scale(Constants.GLOBE_SCALE), Color.BLUE);
-        /*
-        this.drawVector(p_u.copy().scale(Constants.GLOBE_SCALE), Color.RED);
-        this.drawVector(u_u.copy().scale(Constants.GLOBE_SCALE), Color.GREEN);
-        this.drawVector(n_u.copy().scale(Constants.GLOBE_SCALE), Color.BLUE);
-
-         */
-
-        double r = Constants.GLOBE_SCALE;
+        double r = Settings.GLOBE_SCALE;
 
         try {
 
@@ -314,16 +298,12 @@ public class GraphicsContent extends JPanel {
 
             double step = Math.toRadians(5.0);
             Vector v_prev = p_u.multiply(r * Math.cos(0.0)).add(u_u.multiply(r * Math.sin(0.0)));
-            v_prev.rotateWorldZ(Constants.GLOBE_ROTATION);
+            v_prev.rotateWorldZ(Settings.GLOBE_ROTATION);
             for (double t = step; t <= delta; t += step) {
 
                 Vector v = p_u.multiply(r * Math.cos(t)).add(u_u.multiply(r * Math.sin(t)));
 
-
-                v.normalize().scale(r);
-
-                // apply rotation
-                v.rotateWorldZ(Constants.GLOBE_ROTATION);
+                v.rotateWorldZ(Settings.GLOBE_ROTATION);
 
                 Vector sv = projectionMatrix.doScreenProjection(v);
                 Vector sv_prev = projectionMatrix.doScreenProjection(v_prev);
@@ -338,6 +318,18 @@ public class GraphicsContent extends JPanel {
 
                 v_prev = v;
             }
+
+            // draw current flight pos
+            double t = Settings.FLIGHT_PROGRESS * delta;
+            Vector v = p_u.multiply(r * Math.cos(t)).add(u_u.multiply(r * Math.sin(t)));
+            drawVector(v, Color.RED);
+            v.rotateWorldZ(Settings.GLOBE_ROTATION);
+            Vector sv = projectionMatrix.doScreenProjection(v);
+            int dotSize = 10;
+            g.setColor(Color.RED);
+            g.fillRect((int) sv.x() - dotSize / 2, (int) sv.y() - dotSize / 2, dotSize, dotSize);
+            this.debugStrings.add(String.format("%.2f", Settings.FLIGHT_PROGRESS));
+
         } catch (
                 Exception e) {
             e.printStackTrace();
@@ -350,25 +342,25 @@ public class GraphicsContent extends JPanel {
     private void recalculateValues() {
 
         projectionMatrix = new Matrix(new double[][]{
-                {-Constants.PROJECTION_S1 * Math.sin(Math.toRadians(Constants.PROJECTION_ALPHA)), 1.0, 0.0, Constants.WINDOW_WIDTH / 2.},
-                {-Constants.PROJECTION_S1 * Math.cos(Math.toRadians(Constants.PROJECTION_ALPHA)), 0.0, -1.0, Constants.WINDOW_HEIGHT / 2.}
+                {-Settings.PROJECTION_S1 * Math.sin(Math.toRadians(Settings.PROJECTION_ALPHA)), 1.0, 0.0, Settings.WINDOW_WIDTH / 2.},
+                {-Settings.PROJECTION_S1 * Math.cos(Math.toRadians(Settings.PROJECTION_ALPHA)), 0.0, -1.0, Settings.WINDOW_HEIGHT / 2.}
         });
 
         phi_p = Math.toDegrees(
                 Math.atan(
-                        Constants.PROJECTION_S1 *
-                                Math.sin(Math.toRadians(Constants.PROJECTION_ALPHA))
+                        Settings.PROJECTION_S1 *
+                                Math.sin(Math.toRadians(Settings.PROJECTION_ALPHA))
                 )
         );
 
         theta_p = Math.toDegrees(
                 Math.atan(
-                        -Constants.PROJECTION_S1 *
-                                Math.cos(Math.toRadians(Constants.PROJECTION_ALPHA)) *
+                        -Settings.PROJECTION_S1 *
+                                Math.cos(Math.toRadians(Settings.PROJECTION_ALPHA)) *
                                 Math.cos(
                                         Math.atan(
-                                                Constants.PROJECTION_S1 *
-                                                        Math.sin(Math.toRadians(Constants.PROJECTION_ALPHA))
+                                                Settings.PROJECTION_S1 *
+                                                        Math.sin(Math.toRadians(Settings.PROJECTION_ALPHA))
                                         )
                                 )
                 )
