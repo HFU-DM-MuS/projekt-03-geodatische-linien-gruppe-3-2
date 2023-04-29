@@ -26,7 +26,11 @@ public class Settings {
     public static boolean COORD_SHOW_ON_GLOBE = false;
 
     // debug
-    public static boolean DRAW_DEBUG_INFO = true;
+    public static boolean DRAW_DEBUG_INFO = false;
     public static double FLIGHT_PROGRESS = 0.0;
+    public static double FLIGHT_SPEED = 0.1;
+    public static double FLIGHT_DURATION = 3.0;
+    public static double FLIGHT_START_TIME = 0.0;
+
 
 }

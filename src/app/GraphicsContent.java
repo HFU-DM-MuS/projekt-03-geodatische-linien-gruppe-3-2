@@ -16,10 +16,11 @@ public class GraphicsContent extends JPanel {
     private final int w = Settings.WINDOW_WIDTH;
     private final int h = Settings.WINDOW_HEIGHT;
 
-    private final int cx = w/2;
+    private final int cx = w / 2;
     private final int cy = h / 2;
     private double deltaTime = 0.0;
     private double lastFrameTime = 0.0;
+    private double animationStartTime = 0.0;
     private Matrix projectionMatrix;
 
     private Graphics g;
@@ -38,7 +39,7 @@ public class GraphicsContent extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        if(Settings.DRAW_DEBUG_INFO){
+        if (Settings.DRAW_DEBUG_INFO) {
             this.debugStrings.clear();
         }
 
@@ -61,7 +62,7 @@ public class GraphicsContent extends JPanel {
             this.paintGeodesicLine();
         }
 
-        if(Settings.DRAW_DEBUG_INFO){
+        if (Settings.DRAW_DEBUG_INFO) {
             this.addDebugInfo(String.format("%.1f FPS", 1.0 / deltaTime));
             this.drawDebugInfo();
         }
@@ -80,39 +81,40 @@ public class GraphicsContent extends JPanel {
         g.drawString("y-axis", w / 2 + 10, 10);
 
 
-        Vector ux = new Vector(1.0, 0.0, 0.0);
-        Vector uy = new Vector(0.0, 1.0, 0.0);
-        Vector uz = new Vector(0.0, 0.0, 1.0);
+        if (Settings.DRAW_DEBUG_INFO) {
+            Vector ux = new Vector(1.0, 0.0, 0.0);
+            Vector uy = new Vector(0.0, 1.0, 0.0);
+            Vector uz = new Vector(0.0, 0.0, 1.0);
 
-        ux.scale(Settings.GLOBE_SCALE);
-        uy.scale(Settings.GLOBE_SCALE);
-        uz.scale(Settings.GLOBE_SCALE);
+            ux.scale(Settings.GLOBE_SCALE);
+            uy.scale(Settings.GLOBE_SCALE);
+            uz.scale(Settings.GLOBE_SCALE);
 
-        ux.rotateWorldZ(Settings.GLOBE_ROTATION);
-        uy.rotateWorldZ(Settings.GLOBE_ROTATION);
-        uz.rotateWorldZ(Settings.GLOBE_ROTATION);
+            ux.rotateWorldZ(Settings.GLOBE_ROTATION);
+            uy.rotateWorldZ(Settings.GLOBE_ROTATION);
+            uz.rotateWorldZ(Settings.GLOBE_ROTATION);
 
-        try {
-            Vector sx = projectionMatrix.doScreenProjection(ux);
-            Vector sy = projectionMatrix.doScreenProjection(uy);
-            Vector sz = projectionMatrix.doScreenProjection(uz);
+            try {
+                Vector sx = projectionMatrix.doScreenProjection(ux);
+                Vector sy = projectionMatrix.doScreenProjection(uy);
+                Vector sz = projectionMatrix.doScreenProjection(uz);
 
-            g2d.setStroke(new BasicStroke(5.0f));
+                g2d.setStroke(new BasicStroke(5.0f));
 
-            g.setColor(Color.RED);
-            g.drawLine(cx, cy, (int) sx.x(), (int) sx.y());
+                g.setColor(Color.RED);
+                g.drawLine(cx, cy, (int) sx.x(), (int) sx.y());
 
-            g.setColor(Color.GREEN);
-            g.drawLine(cx, cy, (int) sy.x(), (int) sy.y());
+                g.setColor(Color.GREEN);
+                g.drawLine(cx, cy, (int) sy.x(), (int) sy.y());
 
-            g.setColor(Color.BLUE);
-            g.drawLine(cx, cy, (int) sz.x(), (int) sz.y());
+                g.setColor(Color.BLUE);
+                g.drawLine(cx, cy, (int) sz.x(), (int) sz.y());
 
 
-        } catch (Exception e) {
-            e.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
-
     }
 
     private void paintGlobeWireframe() {
@@ -272,8 +274,11 @@ public class GraphicsContent extends JPanel {
         Vector q = coordEnd.toCartesian();
 
 
-        this.drawVector(p, Color.PINK);
-        this.drawVector(q, Color.ORANGE);
+        if(Settings.DRAW_DEBUG_INFO){
+            this.drawVector(p, Color.PINK);
+            this.drawVector(q, Color.ORANGE);
+        }
+
 
         // calculate delta angle
         double delta = Math.acos(
@@ -296,7 +301,7 @@ public class GraphicsContent extends JPanel {
             g2d.setStroke(new BasicStroke(2.0f));
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-            double step = Math.toRadians(5.0);
+            double step = Math.toRadians(2.0);
             Vector v_prev = p_u.multiply(r * Math.cos(0.0)).add(u_u.multiply(r * Math.sin(0.0)));
             v_prev.rotateWorldZ(Settings.GLOBE_ROTATION);
             for (double t = step; t <= delta; t += step) {
@@ -320,9 +325,20 @@ public class GraphicsContent extends JPanel {
             }
 
             // draw current flight pos
-            double t = Settings.FLIGHT_PROGRESS * delta;
+            Settings.FLIGHT_PROGRESS = (lastFrameTime - Settings.FLIGHT_START_TIME) / Settings.FLIGHT_DURATION;
+
+            if (Settings.FLIGHT_PROGRESS > 1.0) {
+                Settings.FLIGHT_PROGRESS = 1.0;
+            }
+
+            // double t = Settings.FLIGHT_PROGRESS * delta;
+            double t = easeInOut(Settings.FLIGHT_PROGRESS) * delta;
             Vector v = p_u.multiply(r * Math.cos(t)).add(u_u.multiply(r * Math.sin(t)));
-            drawVector(v, Color.RED);
+
+            if(Settings.DRAW_DEBUG_INFO){
+                drawVector(v, Color.RED);
+            }
+
             v.rotateWorldZ(Settings.GLOBE_ROTATION);
             Vector sv = projectionMatrix.doScreenProjection(v);
             int dotSize = 10;
@@ -376,10 +392,30 @@ public class GraphicsContent extends JPanel {
         int y = 10;
         g.setColor(Color.BLACK);
 
-        for(String line : this.debugStrings) {
+        for (String line : this.debugStrings) {
             g.drawString(line, x, y);
 
             y += 15;
         }
+    }
+
+    private double lerp(double start, double end, double percent) {
+        return (start + (end - start) * percent);
+    }
+
+    private double easeIn(double t) {
+        return Math.pow(t, 2);
+    }
+
+    private double easeOut(double t) {
+        return flip(Math.pow(flip(t), 2));
+    }
+
+    private double flip(double t) {
+        return 1 - t;
+    }
+
+    private double easeInOut(double t) {
+        return lerp(easeIn(t), easeOut(t), t);
     }
 }

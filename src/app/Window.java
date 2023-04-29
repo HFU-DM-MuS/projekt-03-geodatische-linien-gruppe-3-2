@@ -53,7 +53,7 @@ public class Window {
         frame.setResizable(true);
 
         JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(10, 1));
+        panel.setLayout(new GridLayout(9, 1));
         panel.setPreferredSize(new Dimension(400, 375));
 
 
@@ -144,7 +144,7 @@ public class Window {
         JLabel showDebugInfoLabel = new JLabel("Show Debug Info");
         showDebugInfoLabel.setPreferredSize(new Dimension(nameLabelWidth, labelHeight));
         JCheckBox showDebugInfoCheckbox = new JCheckBox();
-        showDebugInfoCheckbox.setSelected(Settings.GLOBE_SHOW_WIREFRAME);
+        showDebugInfoCheckbox.setSelected(Settings.DRAW_DEBUG_INFO);
         showDebugInfoCheckbox.addChangeListener(e -> {
             Settings.DRAW_DEBUG_INFO = showDebugInfoCheckbox.isSelected();
         });
@@ -241,6 +241,8 @@ public class Window {
                     /*System.out.printf("Start: %f %f\tEnd: %f %f", Constants.COORD_START_LAT, Constants.COORD_START_LONG, Constants.COORD_END_LAT, Constants.COORD_END_LONG);*/
 
                     Settings.COORD_SHOW_ON_GLOBE = true;
+
+                    Settings.FLIGHT_START_TIME = thread.getTimeInSeconds();
                 } else {
                     System.err.printf("Coordinates must fit pattern %s", regex);
                     Settings.COORD_SHOW_ON_GLOBE = false;
@@ -255,24 +257,7 @@ public class Window {
         panelRow9.add(runButton, BorderLayout.NORTH);
 
 
-        // globe rotation slider
-        JPanel panelRow10 = new JPanel();
-        panelRow10.setLayout(new BorderLayout(10, 0));
-        panelRow10.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        JLabel flightProgressLabel = new JLabel("Rotation");
-        flightProgressLabel.setPreferredSize(new Dimension(nameLabelWidth, labelHeight));
-        JLabel flightProgressValue = new JLabel(String.format("%.2f", Settings.FLIGHT_PROGRESS));
-        flightProgressValue.setPreferredSize(new Dimension(valueLabelWidth, labelHeight));
-        JSlider flightProgressSlider = new JSlider(0, 100, (int) Settings.FLIGHT_PROGRESS);
-        flightProgressSlider.addChangeListener(e -> {
-            Settings.FLIGHT_PROGRESS = (double)flightProgressSlider.getValue() / 100.0;
-            flightProgressValue.setText(String.format("%d", (int) (Settings.FLIGHT_PROGRESS * 100.0)));
-        });
-
-        panelRow10.add(flightProgressLabel, BorderLayout.LINE_START);
-        panelRow10.add(flightProgressSlider, BorderLayout.CENTER);
-        panelRow10.add(flightProgressValue, BorderLayout.LINE_END);
 
         panel.add(panelRow1);
         panel.add(panelRow2);
@@ -283,7 +268,6 @@ public class Window {
         panel.add(panelRow7);
         panel.add(panelRow8);
         panel.add(panelRow9);
-        panel.add(panelRow10);
 
         frame.add(panel);
         frame.setLocation(Settings.WINDOW_WIDTH, 1);
