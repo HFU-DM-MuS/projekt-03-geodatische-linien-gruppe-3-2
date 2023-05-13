@@ -176,7 +176,7 @@ public class Window {
         //startCoordLabel.setPreferredSize(new Dimension(nameLabelWidth, labelHeight));
         JTextField startCoordTextField = new JTextField();
         //startCoordTextField.setText("51.477928, 0.0");
-        startCoordTextField.setText("45.0, 90.0");
+        startCoordTextField.setText("48.0501442, 8.2014192");
         //startCoordTextField.setPreferredSize(new Dimension(textFieldWidth, textFieldHeight));
 
 
@@ -202,7 +202,7 @@ public class Window {
         JLabel endCoordLabel = new JLabel("End");
         //startCoordLabel.setPreferredSize(new Dimension(nameLabelWidth, labelHeight));
         JTextField endCoordTextField = new JTextField();
-        endCoordTextField.setText("-45.0, 0.0");
+        endCoordTextField.setText("-33.867487, 151.206990");
         //startCoordTextField.setPreferredSize(new Dimension(textFieldWidth, textFieldHeight));
 
         c = new GridBagConstraints();
