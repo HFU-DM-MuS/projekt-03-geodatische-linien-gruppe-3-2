@@ -60,6 +60,7 @@ public class Matrix {
         });
 
         Matrix result = this.multiply(vm);
+
         return new Vector(
                 result.data[0][0],
                 result.data[1][0],

@@ -50,15 +50,19 @@ public class GraphicsContent extends JPanel {
         lastFrameTime = t.getTimeInSeconds();
         this.recalculateValues();
 
+        // draw x- and y-axis
         this.paintCoordinateSystem();
 
         if (Settings.GLOBE_SHOW_WIREFRAME) {
+            // draw wireframe around globe
             this.paintGlobeWireframe();
         }
 
+        // draw circumcircle
         this.paintCircumcircle();
 
         if (Settings.COORD_SHOW_ON_GLOBE) {
+            // draw and animate flight from start to end coordinate
             this.paintGeodesicLine();
         }
 
@@ -184,6 +188,8 @@ public class GraphicsContent extends JPanel {
         try {
 
             int step = 2;
+
+            // save previous vector pos outside of loop to draw lines
             Vector cv_prev = new Vector(0.0, Math.cos(Math.toRadians(0)), Math.sin(Math.toRadians(0)));
             cv_prev.rotateWorldY(-theta_p).rotateWorldZ(phi_p).scale(Settings.GLOBE_SCALE);
 
