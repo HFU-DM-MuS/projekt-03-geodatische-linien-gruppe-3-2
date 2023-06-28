@@ -7,7 +7,7 @@
 #### Dozent: Uwe Hahne
 #### Sommersemester 23
 
-### [Zu den Präsentationsfolien](https://github.com/HFU-DM-MuS/projekt-03-geodatische-linien-gruppe-3-2/blob/main/MuS_Thema_3_2_Praesentationsfolien.pdf)
+### [Zu den Präsentationsfolien](https://github.com/HFU-DM-MuS/projekt-03-geodatische-linien-gruppe-3-2/blob/main/media/MuS_Thema_3_2_Praesentationsfolien.pdf)
 
 ## Aufgabenstellung
 
